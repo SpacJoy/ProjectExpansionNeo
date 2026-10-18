@@ -6,6 +6,7 @@ import cool.furry.mc.neoforge.projectexpansion.util.Util;
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.capabilities.IKnowledgeProvider;
 import moze_intel.projecte.api.proxy.IEMCProxy;
+import moze_intel.projecte.api.proxy.ISellProxy;
 import moze_intel.projecte.utils.WorldHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -160,7 +161,8 @@ public class BlockEntityTransmutationInterface extends BlockEntityNBTFilterable 
 
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
-            return slot == 0 && IEMCProxy.INSTANCE.hasValue(stack);
+            //Note: The unsellable enchantment has to be honoured here as well, as this slot converts items straight into EMC
+            return slot == 0 && !ISellProxy.INSTANCE.isUnsellable(stack) && IEMCProxy.INSTANCE.hasValue(stack);
         }
     }
 

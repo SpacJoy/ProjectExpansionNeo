@@ -12,6 +12,7 @@ import moze_intel.projecte.api.capabilities.PECapabilities;
 import moze_intel.projecte.api.capabilities.block_entity.IEmcStorage;
 import moze_intel.projecte.api.event.PlayerAttemptCondenserSetEvent;
 import moze_intel.projecte.api.proxy.IEMCProxy;
+import moze_intel.projecte.api.proxy.ISellProxy;
 import moze_intel.projecte.emc.EMCMappingHandler;
 import moze_intel.projecte.gameObjs.block_entities.WrappedItemHandler;
 import moze_intel.projecte.gameObjs.container.slots.SlotPredicates;
@@ -322,7 +323,8 @@ public class BlockEntityCondenserMK3 extends BlockEntityBase implements IChestLi
             return new WrappedItemHandler(inventory, WrappedItemHandler.WriteMode.IN) {
                 @Override
                 public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
-                    return SlotPredicates.HAS_EMC.test(stack) && !isStackEqualToLock(stack) ? super.insertItem(slot, stack, simulate) : stack;
+                    //Note: The unsellable enchantment has to be honoured here as well, as this inventory burns items into EMC
+                    return !ISellProxy.INSTANCE.isUnsellable(stack) && SlotPredicates.HAS_EMC.test(stack) && !isStackEqualToLock(stack) ? super.insertItem(slot, stack, simulate) : stack;
                 }
             };
         }

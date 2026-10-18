@@ -15,6 +15,7 @@ import cool.furry.mc.neoforge.projectexpansion.util.Util;
 import moze_intel.projecte.api.capabilities.IKnowledgeProvider;
 import moze_intel.projecte.api.capabilities.PECapabilities;
 import moze_intel.projecte.api.proxy.IEMCProxy;
+import moze_intel.projecte.api.proxy.ISellProxy;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.container.PEHandContainer;
 import moze_intel.projecte.gameObjs.container.inventory.TransmutationInventory;
@@ -275,7 +276,9 @@ public class ContainerArcaneTransmutationTablet extends PEHandContainer {
                 }
             }
             //Else if we failed to do that also, transfer to the learn slot if the item has EMC
-            long emc = IEMCProxy.INSTANCE.getSellValue(stackToInsert);
+            //Note: Items carrying the unsellable enchantment are deliberately left in place instead. This path sells directly and
+            // so never goes through SlotConsume#mayPlace, which is why the check has to be repeated here.
+            long emc = ISellProxy.INSTANCE.isUnsellable(stackToInsert) ? 0 : IEMCProxy.INSTANCE.getSellValue(stackToInsert);
             if (emc > 0 || stackToInsert.getItem() instanceof Tome) {
                 if (transmutationInventory.isServer()) {
                     BigInteger emcBigInt = BigInteger.valueOf(emc);
