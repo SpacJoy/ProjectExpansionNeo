@@ -47,7 +47,7 @@ public class PXResultSlot extends ResultSlot {
     }
 
     protected void refillAfterTake(List<ItemStack> items) {
-        if (player.level().isClientSide || tablet.skipRefill) return;
+        if (player.level().isClientSide() || tablet.skipRefill) return;
         List<ItemStack> currentItems = craftSlots.getItems().stream().map(ItemStack::copy).collect(Collectors.toCollection(ArrayList::new));
 
         for (int i = 0; i < currentItems.size(); i++) {

@@ -1,19 +1,19 @@
 package cool.furry.mc.neoforge.projectexpansion.gui;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class BaseWidget extends AbstractWidget {
     private final int uOffset, vOffset, uWidth, vHeight;
-    private final ResourceLocation texture;
-    public BaseWidget(ResourceLocation texture, int x, int y, int imageWidth, int imageHeight) {
+    private final Identifier texture;
+    public BaseWidget(Identifier texture, int x, int y, int imageWidth, int imageHeight) {
         this(texture, x, y, imageWidth, imageHeight, x, y, imageWidth, imageHeight);
     }
 
-    public BaseWidget(ResourceLocation texture, int x, int y, int imageWidth, int imageHeight, int uOffset, int vOffset, int uWidth, int vHeight) {
+    public BaseWidget(Identifier texture, int x, int y, int imageWidth, int imageHeight, int uOffset, int vOffset, int uWidth, int vHeight) {
         super(x, y, imageWidth, imageHeight, Component.empty());
         this.uOffset = uOffset;
         this.vOffset = vOffset;
@@ -23,8 +23,9 @@ public class BaseWidget extends AbstractWidget {
     }
 
     @Override
-    protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        graphics.blit(texture, getX(), getY(), uOffset, vOffset, uWidth, vHeight);
+    protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
+        //26.3 requires an explicit render pipeline for every blit, which blitGui supplies
+        graphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, texture, getX(), getY(), uOffset, vOffset, uWidth, vHeight, 256, 256);
     }
 
     @Override

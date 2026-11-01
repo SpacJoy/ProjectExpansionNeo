@@ -38,12 +38,12 @@ public class Permissions {
     public static final CommandPermissionNode RELOAD_EMC = nodeOpCommand("reload_emc");
 
     private static CommandPermissionNode nodeAllCommand(String name) {
-        return new CommandPermissionNode(Main.MOD_ID + ".command." + name, Commands.LEVEL_ALL);
+        return new CommandPermissionNode(Main.MOD_ID + ".command." + name, net.minecraft.server.permissions.PermissionLevel.ALL);
     }
     private static CommandPermissionNode nodeOpCommand(String name) {
-        return new CommandPermissionNode(Main.MOD_ID + ".command." + name, Commands.LEVEL_GAMEMASTERS);
+        return new CommandPermissionNode(Main.MOD_ID + ".command." + name, net.minecraft.server.permissions.PermissionLevel.GAMEMASTERS);
     }
-    public record CommandPermissionNode(String node, int fallbackLevel) implements Predicate<CommandSourceStack> {
+    public record CommandPermissionNode(String node, net.minecraft.server.permissions.PermissionLevel fallbackLevel) implements Predicate<CommandSourceStack> {
         @Override
         public boolean test(CommandSourceStack source) {
             return me.lucko.fabric.api.permissions.v0.Permissions.check(source, node, fallbackLevel);

@@ -13,7 +13,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.ItemInteractionResult;
+
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
@@ -37,13 +38,13 @@ public class BlockEntityAdvancedAlchemicalChest extends BlockEntityOwnable imple
 		@Override
 		protected void onOpen(Level level, BlockPos pos, BlockState state) {
 			level.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, SoundEvents.CHEST_OPEN, SoundSource.BLOCKS, 0.5F,
-				level.random.nextFloat() * 0.1F + 0.9F);
+				level.getRandom().nextFloat() * 0.1F + 0.9F);
 		}
 
 		@Override
 		protected void onClose(Level level, BlockPos pos, BlockState state) {
 			level.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, SoundEvents.CHEST_CLOSE, SoundSource.BLOCKS, 0.5F,
-				level.random.nextFloat() * 0.1F + 0.9F);
+				level.getRandom().nextFloat() * 0.1F + 0.9F);
 		}
 
 		@Override
@@ -52,7 +53,7 @@ public class BlockEntityAdvancedAlchemicalChest extends BlockEntityOwnable imple
 		}
 
 		@Override
-		protected boolean isOwnContainer(Player player) {
+		public boolean isOwnContainer(Player player) {
 			return player.containerMenu instanceof ContainerAdvancedAlchemicalChest chest && chest.blockEntityMatches(BlockEntityAdvancedAlchemicalChest.this);
 		}
 	};
@@ -146,14 +147,14 @@ public class BlockEntityAdvancedAlchemicalChest extends BlockEntityOwnable imple
         return provider.getBag(getColor());
 	}
 
-	public ItemInteractionResult handleItemActivation(Player player, ItemStack stack) {
+	public InteractionResult handleItemActivation(Player player, ItemStack stack) {
 		if(!super.handleActivation(player, BlockEntityOwnable.ActivationType.CHECK_OWNERSHIP)) {
-			return ItemInteractionResult.FAIL;
+			return InteractionResult.FAIL;
 		}
 
 		if(stack.isEmpty()) {
-			player.displayClientMessage(Lang.Blocks.ADVANCED_ALCHEMICAL_CHEST_INVALID_ITEM.translate(), true);
-			return ItemInteractionResult.FAIL;
+			player.sendOverlayMessage(Lang.Blocks.ADVANCED_ALCHEMICAL_CHEST_INVALID_ITEM.translate());
+			return InteractionResult.FAIL;
 		}
 
 		if(stack.getItem() instanceof AlchemicalBag bag) {
@@ -163,18 +164,19 @@ public class BlockEntityAdvancedAlchemicalChest extends BlockEntityOwnable imple
 				BlockEntityAdvancedAlchemicalChest newBlockEntity = new BlockEntityAdvancedAlchemicalChest(worldPosition, getBlockState());
 				newBlockEntity.owner = owner;
 				newBlockEntity.ownerName = ownerName;
-				newBlockEntity.saveAdditional(new CompoundTag(), player.registryAccess());
+				//26.3 dropped the CompoundTag save overload; the block entity marks itself dirty instead
+				newBlockEntity.setChanged();
 				level.setBlockAndUpdate(worldPosition, block.defaultBlockState().setValue(BlockStateProperties.HORIZONTAL_FACING, getBlockState().getValue(BlockStateProperties.HORIZONTAL_FACING)).setValue(BlockStateProperties.WATERLOGGED, getBlockState().getValue(BlockStateProperties.WATERLOGGED)));
 				level.removeBlockEntity(worldPosition);
 				level.setBlockEntity(newBlockEntity);
 				Util.markDirty(level, worldPosition);
 			}
-			player.displayClientMessage(Lang.Blocks.ADVANCED_ALCHEMICAL_CHEST_COLOR_SET.translate(bag.color.getName()), true);
+			player.sendOverlayMessage(Lang.Blocks.ADVANCED_ALCHEMICAL_CHEST_COLOR_SET.translate(bag.color.getName()));
 		} else {
-			player.displayClientMessage(Lang.Blocks.ADVANCED_ALCHEMICAL_CHEST_INVALID_ITEM.translate(), true);
+			player.sendOverlayMessage(Lang.Blocks.ADVANCED_ALCHEMICAL_CHEST_INVALID_ITEM.translate());
 		}
 
-		return ItemInteractionResult.CONSUME;
+		return InteractionResult.CONSUME;
 	}
 
 	@SuppressWarnings("unused")
@@ -195,7 +197,8 @@ public class BlockEntityAdvancedAlchemicalChest extends BlockEntityOwnable imple
 
 	public void startOpen(Player player) {
 		if (!isRemoved() && !player.isSpectator() && level != null) {
-			openersCounter.incrementOpeners(player, level, getBlockPos(), getBlockState());
+			//26.3 added the interaction range argument to incrementOpeners
+			openersCounter.incrementOpeners(player, level, getBlockPos(), getBlockState(), player.getContainerInteractionRange());
 		}
 	}
 

@@ -17,7 +17,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -436,7 +436,7 @@ public class InfiniteFuelGameTests implements FabricGameTest {
 
     private static DMFurnaceBlockEntity matterFurnace(GameTestHelper test, String id) {
         test.setBlock(POSITION, Blocks.AIR);
-        test.setBlock(POSITION, BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath("projecte", id)));
+        test.setBlock(POSITION, BuiltInRegistries.BLOCK.get(Identifier.fromNamespaceAndPath("projecte", id)));
         return (DMFurnaceBlockEntity) test.getLevel().getBlockEntity(test.absolutePos(POSITION));
     }
 

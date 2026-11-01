@@ -7,49 +7,47 @@ import moze_intel.projecte.gameObjs.gui.PEContainerScreen;
 import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.TransmutationEMCFormatter;
 import moze_intel.projecte.utils.text.PELang;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
 public class GUICondenserMK3Input extends PEContainerScreen<ContainerCondenserMK3Input> {
     public GUICondenserMK3Input(ContainerCondenserMK3Input container, Inventory playerInventory, Component title) {
-        super(container, playerInventory, title);
-        this.imageWidth = 255;
-        this.imageHeight = 233;
+        //26.3 made imageWidth/imageHeight final; the size goes through the five argument constructor instead
+        super(container, playerInventory, title, 255, 233);
     }
 
-    protected ResourceLocation getTexture() {
+    protected Identifier getTexture() {
         return Main.rl("textures/gui/condenser_mk3_input.png");
     }
 
     @Override
-    protected void renderBg(GuiGraphics graphics, float partialTicks, int x, int y) {
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.setShaderTexture(0, getTexture());
+    public void extractContents(GuiGraphicsExtractor graphics, int x, int y, float partialTicks) {
+        //26.3 removed the global shader state; GuiGraphicsExtractor picks the pipeline per blit
 
-        graphics.blit(getTexture(), leftPos, topPos, 0, 0, imageWidth, imageHeight);
+        blitGui(graphics, getTexture(), leftPos, topPos, 0, 0, imageWidth, imageHeight);
 
         int progress = menu.getProgressScaled();
-        graphics.blit(getTexture(), leftPos + 33, topPos + 10, 0, 235, progress, 10);
+        blitGui(graphics, getTexture(), leftPos + 33, topPos + 10, 0, 235, progress, 10);
     }
 
     @Override
-    protected void renderLabels(GuiGraphics graphics, int x, int y) {
+    protected void extractLabels(GuiGraphicsExtractor graphics, int x, int y) {
         //Don't render title or inventory as we don't have space
         long toDisplay = Math.min(menu.displayEmc.get(), menu.requiredEmc.get());
         Component emc = TransmutationEMCFormatter.formatEMC(toDisplay);
-        graphics.drawString(font, emc, 140, 10, 0x404040, false);
+        graphics.text(font, emc, 140, 10, 0xFF404040, false);
     }
 
     @Override
-    protected void renderTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
+    //26.3 renamed renderTooltip to extractTooltip, and tooltips are now pushed through the graphics extractor
+    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         long toDisplay = Math.min(menu.displayEmc.get(), menu.requiredEmc.get());
 
         if (toDisplay < 1e12) {
-            super.renderTooltip(graphics, mouseX, mouseY);
+            super.extractTooltip(graphics, mouseX, mouseY);
             return;
         }
 
@@ -59,9 +57,9 @@ public class GUICondenserMK3Input extends PEContainerScreen<ContainerCondenserMK
         int emcBottom = emcTop + 15;
 
         if (mouseX > emcLeft && mouseX < emcRight && mouseY > emcTop && mouseY < emcBottom) {
-            setTooltipForNextRenderPass(PELang.EMC_TOOLTIP.translate(EMCHelper.formatEmc(toDisplay)));
+            graphics.setTooltipForNextFrame(PELang.EMC_TOOLTIP.translate(EMCHelper.formatEmc(toDisplay)), mouseX, mouseY);
         } else {
-            super.renderTooltip(graphics, mouseX, mouseY);
+            super.extractTooltip(graphics, mouseX, mouseY);
         }
     }
 }

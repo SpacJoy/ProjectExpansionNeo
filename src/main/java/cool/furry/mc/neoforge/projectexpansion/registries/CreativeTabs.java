@@ -14,7 +14,7 @@ import java.util.Objects;
 public class CreativeTabs {
     public static final PEDeferredRegister<CreativeModeTab> Registry = PEDeferredRegister.create(Registries.CREATIVE_MODE_TAB, Main.MOD_ID);
     public static final PEDeferredHolder<CreativeModeTab, CreativeModeTab> MAIN = Registry.register(Main.MOD_ID, () ->
-            net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup.builder()
+            net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab.builder()
                     .icon(() -> new ItemStack(Objects.requireNonNull(Items.FINAL_STAR.get())))
                     .title(Lang.ITEMGROUP.translate())
                     .displayItems((displayParameters, output) -> {

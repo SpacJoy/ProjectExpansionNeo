@@ -68,7 +68,18 @@ public enum Fuel {
 
     public int getBurnTime() { return getBurnTime(null); }
     public int getBurnTime(@Nullable RecipeType<?> type) {
-        return item == null ? -1 : java.util.Objects.requireNonNullElse(net.fabricmc.fabric.api.registry.FuelRegistry.INSTANCE.get(PEItems.AETERNALIS_FUEL.get()), 0);
+        //26.3 removed the furnace fuel table, so the burn time now lives on the item as a COOKING_FUEL component
+        return getDefaultBurnTime();
+    }
+
+    public int getDefaultBurnTime() {
+        return switch (this) {
+            case ALCHEMICAL -> PEItems.ALCHEMICAL_COAL_BURN_TIME;
+            case MOBIUS -> PEItems.MOBIUS_FUEL_BURN_TIME;
+            case AETERNALIS -> PEItems.AETERNALIS_FUEL_BURN_TIME;
+            //the dyed fuels burn for the same length as alchemical coal
+            default -> PEItems.ALCHEMICAL_COAL_BURN_TIME;
+        };
     }
 
     public long getCollectorEMCLimit() {

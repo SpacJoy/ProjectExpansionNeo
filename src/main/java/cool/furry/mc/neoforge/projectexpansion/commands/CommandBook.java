@@ -127,7 +127,7 @@ public class CommandBook {
                     Player player = book.getPlayer(target.itemStackOrException());
                     Component playerDisplay = player == null ? Component.literal(Objects.requireNonNull(target.itemStackOrException().get(DataComponentTypes.OWNER.get())).name()).withStyle(ChatFormatting.DARK_AQUA) : player.getDisplayName().copy().withStyle(ChatFormatting.DARK_AQUA);
                     String commandString = String.format("/%s book player %s %s", CommandRegistry.COMMAND_BASE, playerDisplay.getString(), commandSource);
-                    Component command = Component.literal(commandString).withStyle(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, commandString)).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(commandString))).withColor(ChatFormatting.RED).withUnderlined(true));
+                    Component command = Component.literal(commandString).withStyle(style -> style.withClickEvent(new ClickEvent.SuggestCommand(commandString)).withHoverEvent(new HoverEvent.ShowText(Component.literal(commandString))).withColor(ChatFormatting.RED).withUnderlined(true));
                     ctx.getSource().sendSystemMessage(Lang.Commands.BOOK_BOUND_TO_PLAYER.extendColored(commandSource, ChatFormatting.RED, playerDisplay, command));
                 }
             }
@@ -159,7 +159,7 @@ public class CommandBook {
         if(isSameDimension) {
             return Util.suggestCommand(style, String.format("/tp %s %s %s", location.x(), location.y(), location.z())).withUnderlined(true);
         } else {
-            return Util.suggestCommand(style, String.format("/execute in %s run tp %s %s %s", location.dimension().location(), location.x(), location.y(), location.z())).withUnderlined(true);
+            return Util.suggestCommand(style, String.format("/execute in %s run tp %s %s %s", location.dimension().identifier(), location.x(), location.y(), location.z())).withUnderlined(true);
         }
     }
 
@@ -167,7 +167,7 @@ public class CommandBook {
         boolean isSameDimension = Objects.requireNonNull(ctx.getSource().getPlayer()).level().dimension().equals(location.dimension());
 
         if(!isSameDimension) {
-            return Util.suggestCommand(style, String.format("/execute in %s run tp ~ ~ ~", location.dimension().location())).withUnderlined(true);
+            return Util.suggestCommand(style, String.format("/execute in %s run tp ~ ~ ~", location.dimension().identifier())).withUnderlined(true);
         }
         return style;
     }
@@ -176,7 +176,7 @@ public class CommandBook {
         boolean shouldSuggestCommand = ctx.getSource().getPlayer() != null;
 
         Component pos = Component.literal(String.format("%s %s %s", location.x(), location.y(), location.z())).withStyle(style -> shouldSuggestCommand ? suggestTeleportPos(ctx, style, location) : style).withStyle(ChatFormatting.DARK_AQUA);
-        Component dimension = Component.literal(location.dimension().location().toString()).withStyle(style -> shouldSuggestCommand ? suggestTeleportDimension(ctx, style, location) : style).withStyle(ChatFormatting.DARK_AQUA);
+        Component dimension = Component.literal(location.dimension().identifier().toString()).withStyle(style -> shouldSuggestCommand ? suggestTeleportDimension(ctx, style, location) : style).withStyle(ChatFormatting.DARK_AQUA);
         return Lang.Commands.BOOK_LIST_LOCATION.translateColored(ChatFormatting.AQUA, Component.literal(location.name()).withStyle(ChatFormatting.DARK_AQUA), pos, dimension);
     }
 
@@ -280,7 +280,7 @@ public class CommandBook {
         builder.deleteCharAt(builder.length() - 1);
         builder.append("]");
         String content = builder.toString();
-        sendSuccess(ctx.getSource(), Component.literal(content).withStyle((style) -> style.withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, content)).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Lang.Commands.BOOK_CLICK_TO_COPY.translateColored(ChatFormatting.AQUA)))).withStyle(ChatFormatting.GRAY), false);
+        sendSuccess(ctx.getSource(), Component.literal(content).withStyle((style) -> style.withClickEvent(new ClickEvent.CopyToClipboard(content)).withHoverEvent(new HoverEvent.ShowText(Lang.Commands.BOOK_CLICK_TO_COPY.translateColored(ChatFormatting.AQUA)))).withStyle(ChatFormatting.GRAY), false);
         return 1;
     }
 

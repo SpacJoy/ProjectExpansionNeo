@@ -14,12 +14,14 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
 import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.UUID;
 
 public class ItemInfiniteFuel extends Item {
@@ -30,10 +32,10 @@ public class ItemInfiniteFuel extends Item {
 
     @Environment(EnvType.CLIENT)
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> list, TooltipFlag tooltipFlag) {
-        super.appendHoverText(stack, context, list, tooltipFlag);
-        list.add(Lang.Items.INFINITE_FUEL_TOOLTIP.translateColored(ChatFormatting.GRAY));
-        list.add(Lang.COST.translateColored(ChatFormatting.RED, EMCFormat.getComponent(Config.server.infiniteFuelCost.get()).setStyle(ColorStyle.GRAY)));
+    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag tooltipFlag) {
+        super.appendHoverText(stack, context, display, tooltip, tooltipFlag);
+        tooltip.accept(Lang.Items.INFINITE_FUEL_TOOLTIP.translateColored(ChatFormatting.GRAY));
+        tooltip.accept(Lang.COST.translateColored(ChatFormatting.RED, EMCFormat.getComponent(Config.server.infiniteFuelCost.get()).setStyle(ColorStyle.GRAY)));
     }
 
     /** Pays for one active furnace tick, retaining less than one prepaid EMC on the item. */

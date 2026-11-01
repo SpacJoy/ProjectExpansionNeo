@@ -8,7 +8,7 @@ import moze_intel.projecte.gameObjs.container.slots.SlotPredicates;
 import moze_intel.projecte.gameObjs.container.slots.ValidatedSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
@@ -103,7 +103,7 @@ public abstract class ContainerCollector extends ContainerBase {
     }
 
     @Override
-    public void clicked(int slotID, int button, ClickType flag, Player player) {
+    public void clicked(int slotID, int button, ContainerInput flag, Player player) {
         Slot slot = tryGetSlot(slotID);
         if (slot instanceof SlotGhost && !slot.getItem().isEmpty()) {
             slot.set(ItemStack.EMPTY);

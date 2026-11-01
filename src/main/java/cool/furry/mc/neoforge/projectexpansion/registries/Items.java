@@ -18,13 +18,13 @@ public class Items {
     public static final PEDeferredHolder<Item, ItemMatterUpgrader> MATTER_UPGRADER = Registry.register("matter_upgrader", ItemMatterUpgrader::new);
     public static final PEDeferredHolder<Item, ItemInfiniteFuel> INFINITE_FUEL = Registry.register("infinite_fuel", ItemInfiniteFuel::new);
     public static final PEDeferredHolder<Item, ItemInfiniteSteak> INFINITE_STEAK = Registry.register("infinite_steak", ItemInfiniteSteak::new);
-    public static final PEDeferredHolder<Item, BlockItem> TRANSMUTATION_INTERFACE = Registry.register("transmutation_interface", () -> new BlockItem(Blocks.TRANSMUTATION_INTERFACE.get(), new Item.Properties().rarity(Rarity.EPIC).fireResistant()));
-    public static final PEDeferredHolder<Item, BlockItem> COMPACT_SUN = Registry.register("compact_sun", () -> new BlockItem(Blocks.COMPACT_SUN.get(), new Item.Properties().rarity(Rarity.EPIC).fireResistant()));
+    public static final PEDeferredHolder<Item, BlockItem> TRANSMUTATION_INTERFACE = Registry.register("transmutation_interface", () -> new TooltipBlockItem(Blocks.TRANSMUTATION_INTERFACE.get(), new Item.Properties().rarity(Rarity.EPIC).fireResistant()));
+    public static final PEDeferredHolder<Item, BlockItem> COMPACT_SUN = Registry.register("compact_sun", () -> new TooltipBlockItem(Blocks.COMPACT_SUN.get(), new Item.Properties().rarity(Rarity.EPIC).fireResistant()));
     public static final PEDeferredHolder<Item, ItemKnowledgeSharingBook> KNOWLEDGE_SHARING_BOOK = Registry.register("knowledge_sharing_book", ItemKnowledgeSharingBook::new);
     public static final PEDeferredHolder<Item, ItemAlchemicalBook> BASIC_ALCHEMICAL_BOOK = Registry.register("basic_alchemical_book", () -> new ItemAlchemicalBook(ItemAlchemicalBook.Tier.BASIC));
     public static final PEDeferredHolder<Item, ItemAlchemicalBook> ADVANCED_ALCHEMICAL_BOOK = Registry.register("advanced_alchemical_book", () -> new ItemAlchemicalBook(ItemAlchemicalBook.Tier.ADVANCED));
     public static final PEDeferredHolder<Item, ItemAlchemicalBook> MASTER_ALCHEMICAL_BOOK = Registry.register("master_alchemical_book", () -> new ItemAlchemicalBook(ItemAlchemicalBook.Tier.MASTER));
     public static final PEDeferredHolder<Item, ItemAlchemicalBook> ARCANE_ALCHEMICAL_BOOK = Registry.register("arcane_alchemical_book", () -> new ItemAlchemicalBook(ItemAlchemicalBook.Tier.ARCANE));
-    public static final PEDeferredHolder<Item, BlockItem> CONDENSER_MK3 = Registry.register("condenser_mk3", () -> new BlockItem(Blocks.CONDENSER_MK3.get(), new Item.Properties().fireResistant()));
+    public static final PEDeferredHolder<Item, BlockItem> CONDENSER_MK3 = Registry.register("condenser_mk3", () -> new TooltipBlockItem(Blocks.CONDENSER_MK3.get(), new Item.Properties().fireResistant()));
     public static final PEDeferredHolder<Item, ItemArcaneTransmutationTablet> ARCANE_TRANSMUTATION_TABLET = Registry.register("arcane_transmutation_tablet", ItemArcaneTransmutationTablet::new);
 }

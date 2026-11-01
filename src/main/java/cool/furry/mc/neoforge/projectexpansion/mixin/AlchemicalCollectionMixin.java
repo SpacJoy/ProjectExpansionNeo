@@ -14,6 +14,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Containers;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemInstance;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.block.Block;
@@ -36,15 +37,17 @@ import java.util.stream.Collectors;
 // This mixin enables converting mined items with EMC into EMC and knowledge
 @Mixin(value = Block.class)
 public abstract class AlchemicalCollectionMixin {
-    @Inject(at = @At("RETURN"), method = "getDrops(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/item/ItemStack;)Ljava/util/List;", cancellable = true)
-    private static void getDrops(BlockState state, ServerLevel level, BlockPos pos, BlockEntity blockEntity, Entity entity, ItemStack stack, CallbackInfoReturnable<List<ItemStack>> cir) {
+    // 26.3 changed the sixth parameter of the six argument overload from ItemStack to ItemInstance (the tool
+    // that broke the block). ItemStack implements that interface, so the body still works unchanged.
+    @Inject(at = @At("RETURN"), method = "getDrops(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/item/ItemInstance;)Ljava/util/List;", cancellable = true)
+    private static void getDrops(BlockState state, ServerLevel level, BlockPos pos, BlockEntity blockEntity, Entity entity, ItemInstance tool, CallbackInfoReturnable<List<ItemStack>> cir) {
         if (!(entity instanceof ServerPlayer player)) return;
         @Nullable IKnowledgeProvider provider = Util.getKnowledgeProvider(player);
         if (provider == null) return;
         IEMCProxy proxy = IEMCProxy.INSTANCE;
-        boolean hasEnch = EnchantmentHelper.getItemEnchantmentLevel(level.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getOrThrow(Enchantments.ALCHEMICAL_COLLECTION), stack) > 0;
+        boolean hasEnch = EnchantmentHelper.getItemEnchantmentLevel(level.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getOrThrow(Enchantments.ALCHEMICAL_COLLECTION), tool) > 0;
         if (!player.hasCorrectToolForDrops(state) || !hasEnch) return;
-        boolean enabled = stack.getOrDefault(PEDataComponentTypes.ACTIVE.get(), false);
+        boolean enabled = tool.getOrDefault(PEDataComponentTypes.ACTIVE.get(), false);
         if (!enabled) {
             return;
         }

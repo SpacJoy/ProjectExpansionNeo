@@ -37,10 +37,11 @@ import net.fabricmc.api.Environment;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.function.Consumer;
 
-public class BlockTransmutationInterface extends Block implements EntityBlock, IMatterBlock {
+public class BlockTransmutationInterface extends Block implements EntityBlock, IMatterBlock, IHasBlockTooltip {
     public BlockTransmutationInterface(BlockBehaviour.Properties properties) {
-        super(properties.pushReaction(PushReaction.BLOCK).mapColor(MapColor.COLOR_RED));
+        super(properties.pushReaction(PushReaction.IMMOVEABLE).mapColor(MapColor.COLOR_RED));
         this.registerDefaultState(this.stateDefinition.any().setValue(BlockEntityNBTFilterable.FILTER, true));
     }
 
@@ -58,18 +59,16 @@ public class BlockTransmutationInterface extends Block implements EntityBlock, I
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new BlockEntityTransmutationInterface(pos, state);
     }
-
-    @Environment(EnvType.CLIENT)
+    //26.3 removed BlockBehaviour#appendHoverText, so the lines are relayed through TooltipBlockItem instead
     @Override
-    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> list, TooltipFlag tooltipFlag) {
-        super.appendHoverText(stack, context, list, tooltipFlag);
-        list.add(Lang.Blocks.TRANSMUTATION_INTERFACE_TOOLTIP.translateColored(ChatFormatting.GRAY));
-        list.add(Lang.SEE_WIKI.translateColored(ChatFormatting.AQUA));
+    public void addTooltip(ItemStack stack, Consumer<Component> tooltip) {
+        tooltip.accept(Lang.Blocks.TRANSMUTATION_INTERFACE_TOOLTIP.translateColored(ChatFormatting.GRAY));
+        tooltip.accept(Lang.SEE_WIKI.translateColored(ChatFormatting.AQUA));
     }
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
-        if (level.isClientSide) return InteractionResult.SUCCESS;
+        if (level.isClientSide()) return InteractionResult.SUCCESS;
 
         BlockEntityTransmutationInterface blockEntity = WorldHelper.getBlockEntity(BlockEntityTransmutationInterface.class, level, pos);
         if (blockEntity == null) return InteractionResult.FAIL;
@@ -93,7 +92,7 @@ public class BlockTransmutationInterface extends Block implements EntityBlock, I
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        if (type == BlockEntityTypes.TRANSMUTATION_INTERFACE.get() && !level.isClientSide) return BlockEntityTransmutationInterface::tickServer;
+        if (type == BlockEntityTypes.TRANSMUTATION_INTERFACE.get() && !level.isClientSide()) return BlockEntityTransmutationInterface::tickServer;
         return null;
     }
 }

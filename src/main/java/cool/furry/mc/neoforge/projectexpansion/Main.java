@@ -17,7 +17,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
@@ -61,16 +61,13 @@ public final class Main implements ModInitializer {
 
         AttachmentTypes.init();
         Attributes.Registry.register();
-        net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry.register(net.minecraft.world.entity.EntityType.PLAYER,
-            net.minecraft.world.entity.player.Player.createAttributes().add(Attributes.SUN_EXPOSURE_PROTECTION));
+        net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry.register(net.minecraft.world.entity.EntityTypes.PLAYER,
+            net.minecraft.world.entity.player.Player.createAttributes().add(Attributes.SUN_EXPOSURE_PROTECTION.asReference()));
         DataComponentTypes.Registry.register();
-        BlockTypes.Registry.register();
+        //26.3 removed the block_type registry, so BlockTypes no longer registers anything
         Blocks.Registry.register();
         Items.Registry.register();
-        for (Fuel fuel : Fuel.VALUES) {
-            if (fuel.getItem() != null) net.fabricmc.fabric.api.registry.FuelRegistry.INSTANCE.add(fuel.getItem(), fuel.getBurnTime());
-            if (fuel.getBlockItem() != null) net.fabricmc.fabric.api.registry.FuelRegistry.INSTANCE.add(fuel.getBlockItem(), fuel.getBurnTime() * 9);
-        }
+        //26.3 removed the furnace fuel table; Fuel#register writes the COOKING_FUEL component on each item instead
         net.fabricmc.fabric.api.event.player.UseBlockCallback.EVENT.register((player, world, hand, hit) -> {
             if (player.isSpectator()) return net.minecraft.world.InteractionResult.PASS;
             var stack = player.getItemInHand(hand);
@@ -79,7 +76,7 @@ public final class Main implements ModInitializer {
             }
             if (stack.getItem() instanceof moze_intel.projecte.gameObjs.items.PhilosophersStone &&
                     world.getBlockEntity(hit.getBlockPos()) instanceof cool.furry.mc.neoforge.projectexpansion.block.entity.BlockEntityNBTFilterable block) {
-                if (!world.isClientSide) block.toggleFilter(player);
+                if (!world.isClientSide()) block.toggleFilter(player);
                 return net.minecraft.world.InteractionResult.SUCCESS;
             }
             return net.minecraft.world.InteractionResult.PASS;
@@ -125,5 +122,5 @@ public final class Main implements ModInitializer {
         }
     }
 
-    public static ResourceLocation rl(String path) { return ResourceLocation.fromNamespaceAndPath(MOD_ID, path); }
+    public static Identifier rl(String path) { return Identifier.fromNamespaceAndPath(MOD_ID, path); }
 }

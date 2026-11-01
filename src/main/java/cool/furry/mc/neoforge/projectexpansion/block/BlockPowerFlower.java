@@ -5,7 +5,6 @@ import cool.furry.mc.neoforge.projectexpansion.block.entity.BlockEntityOwnable;
 import cool.furry.mc.neoforge.projectexpansion.block.entity.BlockEntityPowerFlower;
 import cool.furry.mc.neoforge.projectexpansion.config.Config;
 import cool.furry.mc.neoforge.projectexpansion.registries.BlockEntityTypes;
-import cool.furry.mc.neoforge.projectexpansion.registries.BlockTypes;
 import cool.furry.mc.neoforge.projectexpansion.util.*;
 import moze_intel.projecte.gameObjs.IMatterType;
 import moze_intel.projecte.gameObjs.blocks.IMatterBlock;
@@ -40,8 +39,9 @@ import net.fabricmc.api.Environment;
 import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.function.Consumer;
 
-public class BlockPowerFlower extends Block implements IHasMatter, EntityBlock, IMatterBlock {
+public class BlockPowerFlower extends Block implements IHasMatter, EntityBlock, IMatterBlock, IHasBlockTooltip {
     private static final VoxelShape SHAPE = Shapes.or(
             box(0, 0, 0, 16, 1, 16),
             box(3.5, 4, 6.5, 12.5, 13, 9.5),
@@ -54,7 +54,7 @@ public class BlockPowerFlower extends Block implements IHasMatter, EntityBlock, 
     private final Matter matter;
 
     public BlockPowerFlower(BlockBehaviour.Properties properties, Matter matter) {
-        super(properties.pushReaction(PushReaction.BLOCK).mapColor(matter.mapColor == null ? MapColor.NONE : matter.mapColor.get()));
+        super(properties.pushReaction(PushReaction.IMMOVEABLE).mapColor(matter.mapColor == null ? MapColor.NONE : matter.mapColor.get()));
         this.matter = matter;
     }
 
@@ -99,22 +99,20 @@ public class BlockPowerFlower extends Block implements IHasMatter, EntityBlock, 
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
         return SHAPE;
     }
-
-    @Environment(EnvType.CLIENT)
+    //26.3 removed BlockBehaviour#appendHoverText, so the lines are relayed through TooltipBlockItem instead
     @Override
-    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> list, TooltipFlag tooltipFlag) {
-        super.appendHoverText(stack, context, list, tooltipFlag);
-        list.add(Lang.Blocks.POWER_FLOWER_TOOLTIP.translateColored(ChatFormatting.GRAY, Component.literal(Config.server.tickDelay.get().toString()).setStyle(ColorStyle.GREEN), Component.literal(Config.server.tickDelay.get() == 1 ? "" : "s").setStyle(ColorStyle.GRAY)));
-        list.add(Lang.Blocks.POWER_FLOWER_EMC.translateColored(ChatFormatting.GRAY, EMCFormat.getComponent(getMatter().getPowerFlowerOutput()).setStyle(ColorStyle.GREEN)));
+    public void addTooltip(ItemStack stack, Consumer<Component> tooltip) {
+        tooltip.accept(Lang.Blocks.POWER_FLOWER_TOOLTIP.translateColored(ChatFormatting.GRAY, Component.literal(Config.server.tickDelay.get().toString()).setStyle(ColorStyle.GREEN), Component.literal(Config.server.tickDelay.get() == 1 ? "" : "s").setStyle(ColorStyle.GRAY)));
+        tooltip.accept(Lang.Blocks.POWER_FLOWER_EMC.translateColored(ChatFormatting.GRAY, EMCFormat.getComponent(getMatter().getPowerFlowerOutput()).setStyle(ColorStyle.GREEN)));
         if(stack.getCount() > 1) {
-            list.add(Lang.Blocks.POWER_FLOWER_STACK_EMC.translateColored(ChatFormatting.GRAY, EMCFormat.getComponent(getMatter().getPowerFlowerOutput().multiply(BigInteger.valueOf(stack.getCount()))).setStyle(ColorStyle.GREEN)));
+            tooltip.accept(Lang.Blocks.POWER_FLOWER_STACK_EMC.translateColored(ChatFormatting.GRAY, EMCFormat.getComponent(getMatter().getPowerFlowerOutput().multiply(BigInteger.valueOf(stack.getCount()))).setStyle(ColorStyle.GREEN)));
         }
-        list.add(Lang.SEE_WIKI.translateColored(ChatFormatting.AQUA));
+        tooltip.accept(Lang.SEE_WIKI.translateColored(ChatFormatting.AQUA));
     }
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
-        if (level.isClientSide) return InteractionResult.SUCCESS;
+        if (level.isClientSide()) return InteractionResult.SUCCESS;
         BlockEntityPowerFlower blockEntity = WorldHelper.getBlockEntity(BlockEntityPowerFlower.class, level, pos);
         if (blockEntity == null) return InteractionResult.FAIL;
         blockEntity.handleActivation(player, BlockEntityOwnable.ActivationType.DISPLAY_NAME);
@@ -131,12 +129,9 @@ public class BlockPowerFlower extends Block implements IHasMatter, EntityBlock, 
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        if (type == BlockEntityTypes.POWER_FLOWER.get() && !level.isClientSide) return BlockEntityPowerFlower::tickServer;
+        if (type == BlockEntityTypes.POWER_FLOWER.get() && !level.isClientSide()) return BlockEntityPowerFlower::tickServer;
         return null;
     }
-
-    @Override
-    protected MapCodec<? extends Block> codec() {
-        return BlockTypes.POWER_FLOWER.get();
-    }
+    //26.3 removed the block_type registry and BlockBehaviour#codec; blocks are no longer serialized by codec
+    //so the whole override is gone instead of returning a MapCodec that has nowhere to be registered
 }

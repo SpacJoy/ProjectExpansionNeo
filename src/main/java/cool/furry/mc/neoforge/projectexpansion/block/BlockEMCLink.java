@@ -4,7 +4,6 @@ import com.mojang.serialization.MapCodec;
 import cool.furry.mc.neoforge.projectexpansion.block.entity.BlockEntityEMCLink;
 import cool.furry.mc.neoforge.projectexpansion.block.entity.BlockEntityNBTFilterable;
 import cool.furry.mc.neoforge.projectexpansion.registries.BlockEntityTypes;
-import cool.furry.mc.neoforge.projectexpansion.registries.BlockTypes;
 import cool.furry.mc.neoforge.projectexpansion.util.*;
 import moze_intel.projecte.gameObjs.IMatterType;
 import moze_intel.projecte.gameObjs.blocks.IMatterBlock;
@@ -37,12 +36,13 @@ import net.fabricmc.api.Environment;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.function.Consumer;
 
-public class BlockEMCLink extends Block implements IHasMatter, EntityBlock, IMatterBlock {
+public class BlockEMCLink extends Block implements IHasMatter, EntityBlock, IMatterBlock, IHasBlockTooltip {
     private final Matter matter;
 
     public BlockEMCLink(BlockBehaviour.Properties properties, Matter matter) {
-        super(properties.pushReaction(PushReaction.BLOCK).mapColor(matter.mapColor == null ? MapColor.NONE : matter.mapColor.get()));
+        super(properties.pushReaction(PushReaction.IMMOVEABLE).mapColor(matter.mapColor == null ? MapColor.NONE : matter.mapColor.get()));
         this.matter = matter;
         this.registerDefaultState(this.stateDefinition.any().setValue(BlockEntityNBTFilterable.FILTER, true));
     }
@@ -82,22 +82,20 @@ public class BlockEMCLink extends Block implements IHasMatter, EntityBlock, IMat
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new BlockEntityEMCLink(pos, state);
     }
-
-    @Environment(EnvType.CLIENT)
+    //26.3 removed BlockBehaviour#appendHoverText, so the lines are relayed through TooltipBlockItem instead
     @Override
-    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> list, TooltipFlag tooltipFlag) {
-        super.appendHoverText(stack, context, list, tooltipFlag);
-        list.add(Lang.Blocks.EMC_LINK_TOOLTIP.translateColored(ChatFormatting.GRAY));
-        list.add(Lang.Blocks.EMC_LINK_LIMIT_ITEMS.translateColored(ChatFormatting.GRAY, getMatter().getEMCLinkItemLimitComponent()));
-        list.add(Lang.Blocks.EMC_LINK_LIMIT_FLUIDS.translateColored(ChatFormatting.GRAY, getMatter().getEMCLinkFluidLimitComponent()));
-        list.add(Lang.Blocks.EMC_LINK_FLUID_EXPORT_EFFICIENCY.translateColored(ChatFormatting.GRAY, Component.literal(getMatter().getFluidEfficiencyPercentage() + "%").setStyle(ColorStyle.GREEN)));
-        list.add(Lang.Blocks.EMC_LINK_LIMIT_EMC.translateColored(ChatFormatting.GRAY, getMatter().getEMCLinkEMCLimitComponent()));
-        list.add(Lang.SEE_WIKI.translateColored(ChatFormatting.AQUA));
+    public void addTooltip(ItemStack stack, Consumer<Component> tooltip) {
+        tooltip.accept(Lang.Blocks.EMC_LINK_TOOLTIP.translateColored(ChatFormatting.GRAY));
+        tooltip.accept(Lang.Blocks.EMC_LINK_LIMIT_ITEMS.translateColored(ChatFormatting.GRAY, getMatter().getEMCLinkItemLimitComponent()));
+        tooltip.accept(Lang.Blocks.EMC_LINK_LIMIT_FLUIDS.translateColored(ChatFormatting.GRAY, getMatter().getEMCLinkFluidLimitComponent()));
+        tooltip.accept(Lang.Blocks.EMC_LINK_FLUID_EXPORT_EFFICIENCY.translateColored(ChatFormatting.GRAY, Component.literal(getMatter().getFluidEfficiencyPercentage() + "%").setStyle(ColorStyle.GREEN)));
+        tooltip.accept(Lang.Blocks.EMC_LINK_LIMIT_EMC.translateColored(ChatFormatting.GRAY, getMatter().getEMCLinkEMCLimitComponent()));
+        tooltip.accept(Lang.SEE_WIKI.translateColored(ChatFormatting.AQUA));
     }
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
-        if (level.isClientSide) return InteractionResult.SUCCESS;
+        if (level.isClientSide()) return InteractionResult.SUCCESS;
         BlockEntityEMCLink blockEntity = WorldHelper.getBlockEntity(BlockEntityEMCLink.class, level, pos);
         if (blockEntity == null) return InteractionResult.FAIL;
         InteractionHand hand = player.getUsedItemHand();
@@ -120,12 +118,9 @@ public class BlockEMCLink extends Block implements IHasMatter, EntityBlock, IMat
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        if (type == BlockEntityTypes.EMC_LINK.get() && !level.isClientSide) return BlockEntityEMCLink::tickServer;
+        if (type == BlockEntityTypes.EMC_LINK.get() && !level.isClientSide()) return BlockEntityEMCLink::tickServer;
         return null;
     }
-
-    @Override
-    protected MapCodec<? extends Block> codec() {
-        return BlockTypes.EMC_LINK.get();
-    }
+    //26.3 removed the block_type registry and BlockBehaviour#codec; blocks are no longer serialized by codec
+    //so the whole override is gone instead of returning a MapCodec that has nowhere to be registered
 }

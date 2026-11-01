@@ -6,7 +6,7 @@ import cool.furry.mc.neoforge.projectexpansion.util.Lang;
 import cool.furry.mc.neoforge.projectexpansion.util.SearchType;
 import moze_intel.projecte.utils.text.ILangEntry;
 import net.minecraft.network.chat.Component;
-import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeConfigRegistry;
+import fuzs.forgeconfigapiport.fabric.api.v5.ConfigRegistry;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import cool.furry.mc.neoforge.projectexpansion.util.TranslatableEnum;
@@ -56,8 +56,9 @@ public final class Config {
     }
 
     public static void register() {
-        NeoForgeConfigRegistry.INSTANCE.register(Main.MOD_ID, ModConfig.Type.CLIENT, client.Spec, String.format("%s/client.toml", Main.MOD_ID));
-        NeoForgeConfigRegistry.INSTANCE.register(Main.MOD_ID, ModConfig.Type.SERVER, server.Spec, String.format("%s/server.toml", Main.MOD_ID));
+        //26.3 moved the config registry into the v5 package and dropped the NeoForge prefix
+        ConfigRegistry.INSTANCE.register(Main.MOD_ID, ModConfig.Type.CLIENT, client.Spec, String.format("%s/client.toml", Main.MOD_ID));
+        ConfigRegistry.INSTANCE.register(Main.MOD_ID, ModConfig.Type.SERVER, server.Spec, String.format("%s/server.toml", Main.MOD_ID));
     }
 
     public enum AlchemicalBookEditLevel implements TranslatableEnum, ILangEntry {

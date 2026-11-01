@@ -10,7 +10,7 @@ import moze_intel.projecte.gameObjs.items.ItemPE;
 import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.integration.IntegrationHelper;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
@@ -72,13 +72,14 @@ public class ItemStar extends ItemPE implements IItemEmcHolder, IBarHelper, IHas
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+    public InteractionResult use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        if (!level.isClientSide && FabricLoader.getInstance().isDevelopmentEnvironment() && player.isCreative()) {
+        if (!level.isClientSide() && FabricLoader.getInstance().isDevelopmentEnvironment() && player.isCreative()) {
             stack.set(PEDataComponentTypes.STORED_EMC.get(), getMaximumEmc(stack));
-            return InteractionResultHolder.success(stack);
+            //26.3 collapsed InteractionResultHolder into InteractionResult itself, so the stack is no longer carried
+            return InteractionResult.SUCCESS;
         }
-        return InteractionResultHolder.pass(stack);
+        return InteractionResult.PASS;
     }
 
     @Override

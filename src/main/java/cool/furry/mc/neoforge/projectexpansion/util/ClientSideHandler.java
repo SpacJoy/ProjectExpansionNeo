@@ -16,11 +16,13 @@ public class ClientSideHandler {
     public static void handleAlchemicalBookOpen(PacketOpenAlchemicalBookGUI packet) {
         LocalPlayer player = Objects.requireNonNull(Minecraft.getInstance().player);
         GUIAlchemicalBook gui = new GUIAlchemicalBook(player, packet.hand(), packet.locations(), packet.canEdit());
-        Minecraft.getInstance().setScreen(gui);
+        //26.3 renamed Minecraft#setScreen to setScreenAndShow
+        Minecraft.getInstance().setScreenAndShow(gui);
     }
 
     public static void handleSyncAlchemicalBookLocations(PacketSyncAlchemicalBookLocations packet) {
-        @Nullable Screen currentScreen = Minecraft.getInstance().screen;
+        //26.3 moved the screen holder onto Minecraft#gui, which exposes it as a getter
+        @Nullable Screen currentScreen = Minecraft.getInstance().gui.screen();
         if(currentScreen instanceof GUIAlchemicalBook gui) {
             gui.setLocations(packet.locations(), packet.canEdit());
         }

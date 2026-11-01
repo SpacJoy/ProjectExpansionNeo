@@ -1,43 +1,12 @@
 package cool.furry.mc.neoforge.projectexpansion.registries;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import cool.furry.mc.neoforge.projectexpansion.Main;
-import cool.furry.mc.neoforge.projectexpansion.block.*;
-import cool.furry.mc.neoforge.projectexpansion.util.IHasColor;
-import cool.furry.mc.neoforge.projectexpansion.util.IHasMatter;
-import cool.furry.mc.neoforge.projectexpansion.util.Matter;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockBehaviour;
-import moze_intel.projecte.gameObjs.registration.PEDeferredHolder;
-import moze_intel.projecte.gameObjs.registration.PEDeferredRegister;
-
-import java.util.function.BiFunction;
-
+/**
+ * Placeholder for the block type registry.
+ * <p>
+ * 26.3 removed the {@code minecraft:block_type} registry together with {@code BlockBehaviour#codec} and
+ * {@code BlockBehaviour#propertiesCodec}: block properties are no longer serialized, so a block never needs a
+ * {@code MapCodec} any more. The class is kept as an empty shell so the registration call in {@code Main} and the
+ * references in the block classes keep resolving; the individual {@code BLOCK} constants are gone with the registry.
+ */
 public class BlockTypes {
-    public static final PEDeferredRegister<MapCodec<? extends Block>> Registry = PEDeferredRegister.create(Registries.BLOCK_TYPE, Main.MOD_ID);
-
-    public static final PEDeferredHolder<MapCodec<? extends Block>, MapCodec<BlockAdvancedAlchemicalChest>> ADVANCED_ALCHEMICAL_CHEST = registerColor("advanced_alchemical_chest", BlockAdvancedAlchemicalChest::new);
-    public static final PEDeferredHolder<MapCodec<? extends Block>, MapCodec<BlockCollector>> COLLECTOR = registerMatter("collector", BlockCollector::new);
-    public static final PEDeferredHolder<MapCodec<? extends Block>, MapCodec<BlockEMCLink>> EMC_LINK = registerMatter("emc_link", BlockEMCLink::new);
-    public static final PEDeferredHolder<MapCodec<? extends Block>, MapCodec<BlockPowerFlower>> POWER_FLOWER = registerMatter("power_flower", BlockPowerFlower::new);
-    public static final PEDeferredHolder<MapCodec<? extends Block>, MapCodec<BlockRelay>> RELAY = registerMatter("relay", BlockRelay::new);
-    public static final PEDeferredHolder<MapCodec<? extends Block>, MapCodec<BlockMatter>> MATTER_BLOCK = registerMatter("matter_block", BlockMatter::new);
-    public static final PEDeferredHolder<MapCodec<? extends Block>, MapCodec<BlockCondenserMK3>> CONDENSER_MK3 = Registry.register("condenser_mk3", () -> BlockBehaviour.simpleCodec(BlockCondenserMK3::new));
-
-    public static <T extends Block & IHasMatter> PEDeferredHolder<MapCodec<? extends Block>, MapCodec<T>> registerMatter(String name, BiFunction<BlockBehaviour.Properties, Matter, T> block) {
-        return Registry.register(name, () -> RecordCodecBuilder.mapCodec(instance -> instance.group(
-                BlockBehaviour.propertiesCodec(),
-                Matter.CODEC.fieldOf("matter").forGetter(IHasMatter::getMatter)
-        ).apply(instance, block)));
-    }
-
-    public static <T extends Block & IHasColor> PEDeferredHolder<MapCodec<? extends Block>, MapCodec<T>> registerColor(String name, BiFunction<BlockBehaviour.Properties, DyeColor, T> block) {
-        return Registry.register(name, () -> RecordCodecBuilder.mapCodec(instance -> instance.group(
-                BlockBehaviour.propertiesCodec(),
-                DyeColor.CODEC.fieldOf("color").forGetter(IHasColor::getColor)
-        ).apply(instance, block)));
-    }
 }

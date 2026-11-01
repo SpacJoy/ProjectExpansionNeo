@@ -16,9 +16,9 @@ import moze_intel.projecte.gameObjs.container.slots.SlotPredicates;
 import moze_intel.projecte.utils.ItemHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -283,7 +283,8 @@ public class BlockEntityCollector extends BlockEntityEMC implements IHasMatter, 
     }
 
     public int getSunLevel() {
-        if (Objects.requireNonNull(level).dimensionType().ultraWarm()) {
+        //26.3 dropped DimensionType#ultraWarm; the water evaporation attribute answers the same question
+        if (Objects.requireNonNull(level).environmentAttributes().getDimensionValue(net.minecraft.world.attribute.EnvironmentAttributes.WATER_EVAPORATES)) {
             return 16;
         }
         return level.getMaxLocalRawBrightness(worldPosition.above()) + 1;
@@ -310,21 +311,21 @@ public class BlockEntityCollector extends BlockEntityEMC implements IHasMatter, 
         }
         return new BigDecimal(getStoredEmcBigInteger()).divide(reqEmc, 3, RoundingMode.HALF_UP).doubleValue();
     }
-
     @Override
-    public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        input.deserializeNBT(registries, tag.getCompound(TagNames.INPUT));
-        auxSlots.deserializeNBT(registries, tag.getCompound(TagNames.AUX_SLOTS));
-        unprocessedEMC = new BigDecimal(tag.getString(TagNames.UNPROCESSED_EMC));
+    public void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        //26.3: nested inventories are read straight off child nodes of the ValueInput
+        input.child(TagNames.INPUT).ifPresent(this.input::deserialize);
+        input.child(TagNames.AUX_SLOTS).ifPresent(auxSlots::deserialize);
+        unprocessedEMC = new BigDecimal(input.getStringOr(TagNames.UNPROCESSED_EMC, "0"));
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        tag.put(TagNames.INPUT, input.serializeNBT(registries));
-        tag.put(TagNames.AUX_SLOTS, auxSlots.serializeNBT(registries));
-        tag.putString(TagNames.UNPROCESSED_EMC, unprocessedEMC.toString());
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        input.serialize(output.child(TagNames.INPUT));
+        auxSlots.serialize(output.child(TagNames.AUX_SLOTS));
+        output.putString(TagNames.UNPROCESSED_EMC, unprocessedEMC.toString());
     }
 
     private void sendRelayBonus(Level level, BlockPos pos) {

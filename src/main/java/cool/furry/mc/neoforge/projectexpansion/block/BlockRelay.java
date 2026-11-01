@@ -4,7 +4,6 @@ import com.mojang.serialization.MapCodec;
 import cool.furry.mc.neoforge.projectexpansion.block.entity.BlockEntityRelay;
 import cool.furry.mc.neoforge.projectexpansion.config.Config;
 import cool.furry.mc.neoforge.projectexpansion.registries.BlockEntityTypes;
-import cool.furry.mc.neoforge.projectexpansion.registries.BlockTypes;
 import cool.furry.mc.neoforge.projectexpansion.util.*;
 import moze_intel.projecte.gameObjs.IMatterType;
 import moze_intel.projecte.gameObjs.blocks.IMatterBlock;
@@ -30,12 +29,13 @@ import net.fabricmc.api.Environment;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.function.Consumer;
 
-public class BlockRelay extends Block implements IHasMatter, EntityBlock, IMatterBlock {
+public class BlockRelay extends Block implements IHasMatter, EntityBlock, IMatterBlock, IHasBlockTooltip {
     private final Matter matter;
 
     public BlockRelay(BlockBehaviour.Properties properties, Matter matter) {
-        super(properties.pushReaction(PushReaction.BLOCK).mapColor(matter.mapColor == null ? MapColor.NONE : matter.mapColor.get()));
+        super(properties.pushReaction(PushReaction.IMMOVEABLE).mapColor(matter.mapColor == null ? MapColor.NONE : matter.mapColor.get()));
         this.matter = matter;
     }
 
@@ -75,26 +75,21 @@ public class BlockRelay extends Block implements IHasMatter, EntityBlock, IMatte
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new BlockEntityRelay(pos, state);
     }
-
-    @Environment(EnvType.CLIENT)
+    //26.3 removed BlockBehaviour#appendHoverText, so the lines are relayed through TooltipBlockItem instead
     @Override
-    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> list, TooltipFlag tooltipFlag) {
-        super.appendHoverText(stack, context, list, tooltipFlag);
-        list.add(Lang.Blocks.RELAY_TOOLTIP.translateColored(ChatFormatting.GRAY));
-        list.add(Lang.Blocks.RELAY_BONUS.translateColored(ChatFormatting.GRAY, EMCFormat.getComponent(getMatter().getRelayBonusForTicks(Config.server.tickDelay.get())).setStyle(ColorStyle.GREEN)));
-        list.add(Lang.Blocks.RELAY_TRANSFER.translateColored(ChatFormatting.GRAY, getMatter().getRelayTransferComponent().setStyle(ColorStyle.GREEN)));
-        list.add(Lang.SEE_WIKI.translateColored(ChatFormatting.AQUA));
+    public void addTooltip(ItemStack stack, Consumer<Component> tooltip) {
+        tooltip.accept(Lang.Blocks.RELAY_TOOLTIP.translateColored(ChatFormatting.GRAY));
+        tooltip.accept(Lang.Blocks.RELAY_BONUS.translateColored(ChatFormatting.GRAY, EMCFormat.getComponent(getMatter().getRelayBonusForTicks(Config.server.tickDelay.get())).setStyle(ColorStyle.GREEN)));
+        tooltip.accept(Lang.Blocks.RELAY_TRANSFER.translateColored(ChatFormatting.GRAY, getMatter().getRelayTransferComponent().setStyle(ColorStyle.GREEN)));
+        tooltip.accept(Lang.SEE_WIKI.translateColored(ChatFormatting.AQUA));
     }
 
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        if (type == BlockEntityTypes.RELAY.get() && !level.isClientSide) return BlockEntityRelay::tickServer;
+        if (type == BlockEntityTypes.RELAY.get() && !level.isClientSide()) return BlockEntityRelay::tickServer;
         return null;
     }
-
-    @Override
-    protected MapCodec<? extends Block> codec() {
-        return BlockTypes.RELAY.get();
-    }
+    //26.3 removed the block_type registry and BlockBehaviour#codec; blocks are no longer serialized by codec
+    //so the whole override is gone instead of returning a MapCodec that has nowhere to be registered
 }

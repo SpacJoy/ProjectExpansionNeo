@@ -3,7 +3,6 @@ package cool.furry.mc.neoforge.projectexpansion.block;
 import com.mojang.serialization.MapCodec;
 import cool.furry.mc.neoforge.projectexpansion.block.entity.BlockEntityCondenserMK3;
 import cool.furry.mc.neoforge.projectexpansion.registries.BlockEntityTypes;
-import cool.furry.mc.neoforge.projectexpansion.registries.BlockTypes;
 import cool.furry.mc.neoforge.projectexpansion.util.Lang;
 import moze_intel.projecte.gameObjs.block_entities.EmcChestBlockEntity;
 import moze_intel.projecte.gameObjs.registries.PEItems;
@@ -25,6 +24,8 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -32,8 +33,8 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.material.MapColor;
@@ -49,9 +50,11 @@ import moze_intel.projecte.api.item_handlers.ItemHandlerHelper;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.function.Consumer;
 
-public class BlockCondenserMK3 extends BaseEntityBlock implements SimpleWaterloggedBlock {
-    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
+public class BlockCondenserMK3 extends BaseEntityBlock implements SimpleWaterloggedBlock, IHasBlockTooltip {
+    //26.3 removed DirectionProperty; the horizontal facing property is the plain EnumProperty on HorizontalDirectionalBlock
+    public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
     private static final VoxelShape SHAPE = Block.box(1.0D, 0.0D, 1.0D, 15.0D, 14.0D, 15.0D);
     public BlockCondenserMK3(Properties properties) {
         super(properties);
@@ -68,13 +71,11 @@ public class BlockCondenserMK3 extends BaseEntityBlock implements SimpleWaterlog
         builder.add(FACING);
         builder.add(BlockStateProperties.WATERLOGGED);
     }
-
-    @Environment(EnvType.CLIENT)
+    //26.3 removed BlockBehaviour#appendHoverText, so the lines are relayed through TooltipBlockItem instead
     @Override
-    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> list, TooltipFlag tooltipFlag) {
-        super.appendHoverText(stack, context, list, tooltipFlag);
-        list.add(Lang.Blocks.CONDENSER_MK3_TOOLTIP2.translateColored(ChatFormatting.GRAY));
-        list.add(Lang.SEE_WIKI.translateColored(ChatFormatting.AQUA));
+    public void addTooltip(ItemStack stack, Consumer<Component> tooltip) {
+        tooltip.accept(Lang.Blocks.CONDENSER_MK3_TOOLTIP2.translateColored(ChatFormatting.GRAY));
+        tooltip.accept(Lang.SEE_WIKI.translateColored(ChatFormatting.AQUA));
     }
 
     @Override
@@ -94,20 +95,20 @@ public class BlockCondenserMK3 extends BaseEntityBlock implements SimpleWaterlog
     @Override
     @Deprecated
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.ENTITYBLOCK_ANIMATED;
+        return RenderShape.MODEL;
     }
 
     @Override
     @Deprecated
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult rtr) {
-        if (level.isClientSide) {
+        if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
         }
         BlockEntityCondenserMK3 chest = WorldHelper.getBlockEntity(BlockEntityCondenserMK3.class, level, pos, true);
         if (chest != null) {
             cool.furry.mc.neoforge.projectexpansion.platform.Menus.open(player, chest, pos);
             player.awardStat(Stats.OPEN_CHEST);
-            PiglinAi.angerNearbyPiglins(player, true);
+            PiglinAi.angerNearbyPiglins((ServerLevel) level, player, true);
         }
         return InteractionResult.CONSUME;
     }
@@ -142,8 +143,9 @@ public class BlockCondenserMK3 extends BaseEntityBlock implements SimpleWaterlog
 
     @Override
     @Deprecated
-    public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
-        return ItemHandlerHelper.calcRedstoneFromInventory(WorldHelper.getItemHandler(level, pos, state, null, null));
+    //26.3 added a Direction parameter to getAnalogOutputSignal
+    public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos, Direction direction) {
+        return ItemHandlerHelper.calcRedstoneFromInventory(WorldHelper.getItemHandler(level, pos, state, null, direction));
     }
 
     @Override
@@ -154,31 +156,31 @@ public class BlockCondenserMK3 extends BaseEntityBlock implements SimpleWaterlog
 
     @Override
     @Deprecated
-    public BlockState updateShape(BlockState state, Direction facing, BlockState facingState, LevelAccessor level, BlockPos currentPos, BlockPos facingPos) {
+    //26.3 reshaped updateShape around a ScheduledTickAccess and an explicit RandomSource
+    public BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess tickAccess, BlockPos currentPos, Direction facing,
+            BlockPos facingPos, BlockState facingState, RandomSource random) {
         if (state.getValue(BlockStateProperties.WATERLOGGED)) {
-            level.scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
+            tickAccess.scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
         }
-        return super.updateShape(state, facing, facingState, level, currentPos, facingPos);
+        return super.updateShape(state, level, tickAccess, currentPos, facing, facingPos, facingState, random);
     }
 
     @Override
-    @Deprecated
-    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
-        if (state.getBlock() != newState.getBlock()) {
-            for (Direction direction : Direction.values()) {
-                IItemHandler handler = WorldHelper.getItemHandler(level, pos, state, null, direction);
-                WorldHelper.dropInventory(handler, level, pos);
-            }
-            super.onRemove(state, level, pos, newState, isMoving);
+    //26.3 replaced onRemove with affectNeighborsAfterRemoval, which no longer receives the new state
+    protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean isMoving) {
+        for (Direction direction : Direction.values()) {
+            IItemHandler handler = WorldHelper.getItemHandler(level, pos, state, null, direction);
+            WorldHelper.dropInventory(handler, level, pos);
         }
+        super.affectNeighborsAfterRemoval(state, level, pos, isMoving);
     }
 
     @Override
     @Deprecated
     public void attack(BlockState state, Level level, BlockPos pos, Player player) {
-        if (!level.isClientSide) {
+        if (!level.isClientSide()) {
             ItemStack stack = player.getMainHandItem();
-            if (!stack.isEmpty() && stack.is(PEItems.PHILOSOPHERS_STONE)) {
+            if (!stack.isEmpty() && stack.is(PEItems.PHILOSOPHERS_STONE.get())) {
                 level.setBlockAndUpdate(pos, level.getBlockState(pos).setValue(FACING, player.getDirection().getOpposite()));
             }
         }
@@ -195,11 +197,6 @@ public class BlockCondenserMK3 extends BaseEntityBlock implements SimpleWaterlog
     }
 
     @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() {
-        return BlockTypes.CONDENSER_MK3.get();
-    }
-
-    @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos blockPos, BlockState blockState) {
         return new BlockEntityCondenserMK3(blockPos, blockState);
     }
@@ -208,7 +205,7 @@ public class BlockCondenserMK3 extends BaseEntityBlock implements SimpleWaterlog
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
         if (type == BlockEntityTypes.CONDENSER_MK3.get()) {
-            if (level.isClientSide) return BlockEntityCondenserMK3::tickClient;
+            if (level.isClientSide()) return BlockEntityCondenserMK3::tickClient;
             else return BlockEntityCondenserMK3::tickServer;
         }
         return null;

@@ -94,7 +94,7 @@ public class BlockEntityBase extends BlockEntity {
 
     public void markDirty(Level level, BlockPos pos, boolean recheckComparators) {
         Util.markDirty(level, pos);
-        if (recheckComparators && !level.isClientSide) {
+        if (recheckComparators && !level.isClientSide()) {
             updateComparators = true;
         }
     }
@@ -145,7 +145,7 @@ public class BlockEntityBase extends BlockEntity {
 
         public void compact() {
             if (needsCompacting) {
-                if (level != null && !level.isClientSide) {
+                if (level != null && !level.isClientSide()) {
                     empty = ItemHelper.compactInventory(this);
                 }
                 needsCompacting = false;

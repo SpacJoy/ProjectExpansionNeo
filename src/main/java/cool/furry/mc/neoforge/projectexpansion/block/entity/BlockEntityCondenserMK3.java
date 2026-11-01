@@ -1,6 +1,5 @@
 package cool.furry.mc.neoforge.projectexpansion.block.entity;
 
-import com.mojang.serialization.DataResult;
 import cool.furry.mc.neoforge.projectexpansion.gui.container.ContainerCondenserMK3Input;
 import cool.furry.mc.neoforge.projectexpansion.gui.container.ContainerCondenserMK3Output;
 import cool.furry.mc.neoforge.projectexpansion.registries.BlockEntityTypes;
@@ -21,10 +20,8 @@ import moze_intel.projecte.utils.text.TextComponentUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -62,13 +59,13 @@ public class BlockEntityCondenserMK3 extends BlockEntityBase implements IChestLi
         @Override
         protected void onOpen(Level level, BlockPos pos, BlockState state) {
             level.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, SoundEvents.CHEST_OPEN, SoundSource.BLOCKS, 0.5F,
-                    level.random.nextFloat() * 0.1F + 0.9F);
+                    level.getRandom().nextFloat() * 0.1F + 0.9F);
         }
 
         @Override
         protected void onClose(Level level, BlockPos pos, BlockState state) {
             level.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, SoundEvents.CHEST_CLOSE, SoundSource.BLOCKS, 0.5F,
-                    level.random.nextFloat() * 0.1F + 0.9F);
+                    level.getRandom().nextFloat() * 0.1F + 0.9F);
         }
 
         @Override
@@ -77,7 +74,7 @@ public class BlockEntityCondenserMK3 extends BlockEntityBase implements IChestLi
         }
 
         @Override
-        protected boolean isOwnContainer(Player player) {
+        public boolean isOwnContainer(Player player) {
             return player.containerMenu instanceof ContainerCondenserMK3Input input && input.blockEntityMatches(BlockEntityCondenserMK3.this) ||
                     player.containerMenu instanceof ContainerCondenserMK3Output output && output.blockEntityMatches(BlockEntityCondenserMK3.this);
         }
@@ -169,7 +166,8 @@ public class BlockEntityCondenserMK3 extends BlockEntityBase implements IChestLi
 
     public void startOpen(Player player) {
         if (!isRemoved() && !player.isSpectator() && level != null) {
-            openersCounter.incrementOpeners(player, level, getBlockPos(), getBlockState());
+            //26.3 added the interaction range argument to incrementOpeners
+			openersCounter.incrementOpeners(player, level, getBlockPos(), getBlockState(), player.getContainerInteractionRange());
         }
     }
 
@@ -191,24 +189,20 @@ public class BlockEntityCondenserMK3 extends BlockEntityBase implements IChestLi
     }
 
     @Override
-    public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
+    public void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
         for (Direction dir : Direction.values()) {
             SidedHandler handler = handlers.get(dir);
-            CompoundTag t = tag.getCompound(Util.ucwords(dir.getName()));
-            handler.load(t, registries);
+            input.child(Util.ucwords(dir.getName())).ifPresent(handler::load);
         }
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
         for (Direction dir : Direction.values()) {
             SidedHandler handler = handlers.get(dir);
-            CompoundTag t = new CompoundTag();
-            handler.save(t, registries);
-            tag.put(Util.ucwords(dir.getName()), t);
-
+            handler.save(output.child(Util.ucwords(dir.getName())));
         }
     }
 
@@ -269,7 +263,7 @@ public class BlockEntityCondenserMK3 extends BlockEntityBase implements IChestLi
         }
 
         private boolean attemptCondenserSet(Level level, BlockPos pos, Player player) {
-            if (level.isClientSide) {
+            if (level.isClientSide()) {
                 return false;
             }
             if (getLockInfo() == null) {
@@ -467,32 +461,26 @@ public class BlockEntityCondenserMK3 extends BlockEntityBase implements IChestLi
             isAcceptingEmc = false;
         }
 
-        public void load(CompoundTag tag, HolderLookup.Provider registries) {
+        public void load(ValueInput input) {
             if (isOutput) {
-                getInventory().deserializeNBT(registries, tag.getCompound(TagNames.OUTPUT));
+                input.child(TagNames.OUTPUT).ifPresent(getInventory()::deserialize);
             } else {
-                getInventory().deserializeNBT(registries, tag.getCompound(TagNames.INPUT));
-                if (tag.contains(TagNames.LOCK)) {
-                    lockInfo = ItemInfo.CODEC.parse(registries.createSerializationContext(NbtOps.INSTANCE), tag.get(TagNames.LOCK)).result().orElse(null);
-                } else {
-                    lockInfo = null;
-                }
-                emc = tag.getLong(TagNames.STORED_EMC);
+                input.child(TagNames.INPUT).ifPresent(getInventory()::deserialize);
+                //26.3: ValueInput carries the registry lookups, so the lock codec decodes straight off the node
+                lockInfo = input.read(TagNames.LOCK, ItemInfo.CODEC).orElse(null);
+                emc = input.getLongOr(TagNames.STORED_EMC, 0L);
             }
         }
 
-        public void save(CompoundTag tag, HolderLookup.Provider registries) {
+        public void save(ValueOutput output) {
             if (isOutput) {
-                tag.put(TagNames.OUTPUT, getInventory().serializeNBT(registries));
+                getInventory().serialize(output.child(TagNames.OUTPUT));
             } else {
-                tag.put(TagNames.INPUT, getInventory().serializeNBT(registries));
+                getInventory().serialize(output.child(TagNames.INPUT));
                 if (lockInfo != null) {
-                    DataResult<Tag> result = ItemInfo.CODEC.encodeStart(registries.createSerializationContext(NbtOps.INSTANCE), lockInfo);
-                    if (result.isSuccess()) {
-                        tag.put(TagNames.LOCK, result.getOrThrow());
-                    }
+                    output.store(TagNames.LOCK, ItemInfo.CODEC, lockInfo);
                 }
-                tag.putLong(TagNames.STORED_EMC, emc);
+                output.putLong(TagNames.STORED_EMC, emc);
             }
         }
     }

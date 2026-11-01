@@ -35,7 +35,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -78,7 +78,7 @@ public class Util {
     public static final StreamCodec<ByteBuf, BigInteger> BIG_INTEGER_STREAM_CODEC = ByteBufCodecs.STRING_UTF8.map(val -> val.isEmpty() ? BigInteger.ZERO : new BigInteger(val), BigInteger::toString);
     public static final Codec<Player> PLAYER_CODEC = UUIDUtil.CODEC.xmap(Util::getPlayer, Player::getUUID);
     public static final StreamCodec<ByteBuf, Player> PLAYER_STREAM_CODEC = UUIDUtil.STREAM_CODEC.map(Util::getPlayer, Player::getUUID);
-    public static final Function<String, ResourceLocation> SUN_EXPOSURE_PROTECTION = slot -> Main.rl(String.format("sun_exposure_protection_%s", slot));
+    public static final Function<String, Identifier> SUN_EXPOSURE_PROTECTION = slot -> Main.rl(String.format("sun_exposure_protection_%s", slot));
     public static final String WIKI = "https://github.com/wchiway/ProjectExpansionNeo/wiki";
 
     public static @Nullable ServerPlayer getPlayer(UUID uuid) {
@@ -166,7 +166,8 @@ public class Util {
     }
 
     public static void markDirty(Level level, BlockPos pos) {
-        level.getChunkAt(pos).setUnsaved(true);
+        //26.3 renamed ChunkAccess#setUnsaved to markUnsaved
+        level.getChunkAt(pos).markUnsaved();
         level.sendBlockUpdated(pos, level.getBlockState(pos), level.getBlockState(pos), Block.UPDATE_CLIENTS);
     }
 
@@ -269,8 +270,8 @@ public class Util {
 
     public static Style suggestCommand(Style style, String command) {
         return style
-            .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, command))
-            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(command).withStyle(ChatFormatting.RED)));
+            .withClickEvent(new ClickEvent.SuggestCommand(command))
+            .withHoverEvent(new HoverEvent.ShowText(Component.literal(command).withStyle(ChatFormatting.RED)));
     }
 
     public static BigDecimal divide(BigInteger dividend, BigInteger divisor) {
@@ -306,7 +307,7 @@ public class Util {
      * @return If the player is immune to fire
      */
     public static boolean isImmuneToFire(ServerPlayer player, int timeTolerance) {
-        ItemStack chestplate = player.getInventory().getArmor(EquipmentSlot.CHEST.getIndex());
+        ItemStack chestplate = player.getItemBySlot(EquipmentSlot.CHEST);
         if (chestplate.getItem() instanceof IFireProtector protector && protector.canProtectAgainstFire(chestplate, player)) {
             return true;
         }
@@ -376,7 +377,7 @@ public class Util {
         cool.furry.mc.neoforge.projectexpansion.platform.Menus.open(player, new TransmutationContainerProvider(hand), (buf) -> {
             buf.writeBoolean(true);
             buf.writeEnum(hand);
-            buf.writeByte(player.getInventory().selected);
+            buf.writeByte(player.getInventory().getSelectedSlot());
         });
     }
 
@@ -385,12 +386,8 @@ public class Util {
         if (stack1.isEmpty() && stack2.isEmpty()) return true;
         if (stack1.isEmpty() || stack2.isEmpty()) return false;
 
-        CompoundTag stack1NBT = (CompoundTag) stack1.save(registryAccess, new CompoundTag());
-        CompoundTag stack2NBT = (CompoundTag) stack2.save(registryAccess, new CompoundTag());
-        stack1NBT.remove("count");
-        stack2NBT.remove("count");
-
-        return stack1NBT.toString().equals(stack2NBT.toString());
+        //26.3 removed ItemStack#save; the component patch plus the item identity is what makes two stacks equal
+        return stack1.getComponentsPatch().equals(stack2.getComponentsPatch());
     }
 
     public static ItemStack returnToInventoryOrTransmutation(Inventory playerInv, Player player, IKnowledgeProvider provider, ItemStack stack) {
@@ -432,7 +429,7 @@ public class Util {
 
                     if (player instanceof ServerPlayer serverPlayer) {
                         serverPlayer.connection.send(new ClientboundContainerSetSlotPacket(
-                                ClientboundContainerSetSlotPacket.PLAYER_INVENTORY, 0,
+                                -1, 0,
                                 slot, playerInv.getItem(slot)
                         ));
                     }
@@ -442,7 +439,7 @@ public class Util {
             }
 
             if (force) {
-                player.drop(stack, false);
+                player.drop(stack, false, net.minecraft.util.Prediction.SERVER_ONLY);
                 stack = ItemStack.EMPTY;
                 continue;
             }

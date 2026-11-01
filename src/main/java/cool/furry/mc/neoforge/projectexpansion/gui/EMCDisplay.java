@@ -10,8 +10,8 @@ import moze_intel.projecte.utils.text.ILangEntry;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.LayeredDraw;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.fabricmc.api.EnvType;
@@ -29,6 +29,7 @@ public class EMCDisplay {
     public static final int PADDING_Y = 2;
     private static BigInteger emc = BigInteger.ZERO;
     private static final BigInteger[] history = new BigInteger[]{BigInteger.ZERO, BigInteger.ZERO};
+    private static final BigInteger TWO = BigInteger.valueOf(2);
     private static BigInteger lastEMC = BigInteger.ZERO;
     private static int tick = 0;
     private static int repeatedFailures = 0;
@@ -69,17 +70,24 @@ public class EMCDisplay {
         repeatedFailures = 0;
     }
 
-    public static class Overlay implements LayeredDraw.Layer {
+    public static class Overlay implements HudElement {
 
 
         @Override
-        public void render(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
+        public void extractRenderState(GuiGraphicsExtractor guiGraphics, DeltaTracker deltaTracker) {
             if (!Config.client.Spec.isLoaded() || !Config.client.emcDisplay.get()) return;
             Minecraft mc = Minecraft.getInstance();
-            BigInteger avg = history[0].add(history[1]);
-            String str = EMCFormat.format(emc);
-            if (!avg.equals(BigInteger.ZERO)) str += " " + (avg.compareTo(BigInteger.ZERO) > 0 ? (ChatFormatting.GREEN + "+") : (ChatFormatting.RED + "-")) + EMCFormat.format(avg.abs()) + "/s";
-            String text = String.format("EMC: %s", str);
+            //Each history entry covers 20 ticks, so the sum of both is a two second window. The label says per second,
+            // so the sum has to be halved, otherwise the readout claims twice the real gain.
+            BigInteger avg = history[0].add(history[1]).divide(TWO);
+            String prefix = Lang.EMC_DISPLAY.translate().getString();
+            String value = EMCFormat.format(emc);
+            String rate = "";
+            if (!avg.equals(BigInteger.ZERO)) {
+                rate = " " + (avg.compareTo(BigInteger.ZERO) > 0 ? ChatFormatting.GREEN + "+" : ChatFormatting.RED + "-")
+                        + Lang.EMC_DISPLAY_RATE.translate(EMCFormat.format(avg.abs())).getString();
+            }
+            String text = prefix + value + rate;
             int x = PADDING_X, y = PADDING_Y, width = mc.getWindow().getGuiScaledWidth(), height = mc.getWindow().getGuiScaledHeight(), fontWidth = mc.font.width(text), fontHeight = mc.font.lineHeight;
 
             EmcDisplayPosition position = Config.client.emcDisplayPosition.get();
@@ -91,7 +99,7 @@ public class EMCDisplay {
                 y = height - fontHeight - PADDING_Y;
             }
 
-            guiGraphics.drawString(mc.font, text, x, y, 0xffffff);
+            guiGraphics.text(mc.font, text, x, y, 0xFFFFFFFF, true);
         }
     }
 

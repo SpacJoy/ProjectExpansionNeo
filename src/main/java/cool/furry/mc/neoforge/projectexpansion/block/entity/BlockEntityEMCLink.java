@@ -13,9 +13,8 @@ import moze_intel.projecte.utils.WorldHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -100,26 +99,28 @@ public class BlockEntityEMCLink extends BlockEntityNBTFilterable implements IHas
      *******/
 
     @Override
-    public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        if (tag.contains(TagNames.STORED_EMC, Tag.TAG_STRING)) emc = new BigInteger(tag.getString((TagNames.STORED_EMC)));
-        if (tag.contains(TagNames.ITEM, Tag.TAG_COMPOUND)) itemStack = IEMCProxy.INSTANCE.getPersistentInfo(ItemInfo.fromStack(ItemStack.parseOptional(registries, tag.getCompound(TagNames.ITEM)))).createStack();
-        if (tag.contains(TagNames.REMAINING_EMC, Tag.TAG_STRING)) remainingEMC = new BigInteger(tag.getString(TagNames.REMAINING_EMC));
-        if (tag.contains(TagNames.REMAINING_IMPORT, Tag.TAG_INT)) remainingImport = tag.getInt(TagNames.REMAINING_IMPORT);
-        if (tag.contains(TagNames.REMAINING_EXPORT, Tag.TAG_INT)) remainingExport = tag.getInt(TagNames.REMAINING_EXPORT);
-        if (tag.contains(TagNames.REMAINING_FLUID, Tag.TAG_LONG)) remainingFluid = tag.getLong(TagNames.REMAINING_FLUID);
-        else if (tag.contains(TagNames.REMAINING_FLUID, Tag.TAG_INT)) remainingFluid = tag.getInt(TagNames.REMAINING_FLUID) * 81L;
+    public void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        //26.3 replaced the type checked CompoundTag#contains with Optional returning readers
+        input.getString(TagNames.STORED_EMC).ifPresent(value -> emc = new BigInteger(value));
+        input.read(TagNames.ITEM, ItemStack.CODEC).ifPresent(stack ->
+                itemStack = IEMCProxy.INSTANCE.getPersistentInfo(ItemInfo.fromStack(stack)).createStack());
+        input.getString(TagNames.REMAINING_EMC).ifPresent(value -> remainingEMC = new BigInteger(value));
+        input.getInt(TagNames.REMAINING_IMPORT).ifPresent(value -> remainingImport = value);
+        input.getInt(TagNames.REMAINING_EXPORT).ifPresent(value -> remainingExport = value);
+        //26.3: the long read falls back to the legacy int form that older worlds wrote
+        remainingFluid = input.getLong(TagNames.REMAINING_FLUID).orElseGet(() -> input.getIntOr(TagNames.REMAINING_FLUID, 0) * 81L);
     }
 
     @Override
-    public void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        tag.putString(TagNames.STORED_EMC, emc.toString());
-        tag.put(TagNames.ITEM, itemStack.saveOptional(registries));
-        tag.putString(TagNames.REMAINING_EMC, remainingEMC.toString());
-        tag.putInt(TagNames.REMAINING_IMPORT, remainingImport);
-        tag.putInt(TagNames.REMAINING_EXPORT, remainingExport);
-        tag.putLong(TagNames.REMAINING_FLUID, remainingFluid);
+    public void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        output.putString(TagNames.STORED_EMC, emc.toString());
+        output.store(TagNames.ITEM, ItemStack.CODEC, itemStack);
+        output.putString(TagNames.REMAINING_EMC, remainingEMC.toString());
+        output.putInt(TagNames.REMAINING_IMPORT, remainingImport);
+        output.putInt(TagNames.REMAINING_EXPORT, remainingExport);
+        output.putLong(TagNames.REMAINING_FLUID, remainingFluid);
     }
 
     /********
@@ -132,7 +133,7 @@ public class BlockEntityEMCLink extends BlockEntityNBTFilterable implements IHas
 
     public void tickServer(Level level, BlockPos pos, BlockState state, BlockEntityEMCLink blockEntity) {
         // due to the nature of per second this block follows, using the config value isn't really possible
-        if (level.isClientSide || (level.getGameTime() % 20L) != Util.mod(hashCode(), 20)) return;
+        if (level.isClientSide() || (level.getGameTime() % 20L) != Util.mod(hashCode(), 20)) return;
         resetLimits();
         if (emc.equals(BigInteger.ZERO)) return;
         ServerPlayer player = Util.getPlayer(level, owner);
@@ -188,27 +189,27 @@ public class BlockEntityEMCLink extends BlockEntityNBTFilterable implements IHas
 
         if (player.isCrouching()) {
             if (itemStack.isEmpty()) {
-                player.displayClientMessage(Lang.Blocks.EMC_LINK_NOT_SET.translateColored(ChatFormatting.RED), true);
+                player.sendOverlayMessage(Lang.Blocks.EMC_LINK_NOT_SET.translateColored(ChatFormatting.RED));
                 return InteractionResult.CONSUME;
             }
             if (inHand.isEmpty()) {
                 setInternalItem(ItemStack.EMPTY);
-                player.displayClientMessage(Lang.Blocks.EMC_LINK_CLEARED.translateColored(ChatFormatting.RED), true);
+                player.sendOverlayMessage(Lang.Blocks.EMC_LINK_CLEARED.translateColored(ChatFormatting.RED));
                 return InteractionResult.SUCCESS;
             }
         }
 
         if (itemStack.isEmpty()) {
             if (inHand.isEmpty()) {
-                player.displayClientMessage(Lang.Blocks.EMC_LINK_NOT_SET.translateColored(ChatFormatting.RED), true);
+                player.sendOverlayMessage(Lang.Blocks.EMC_LINK_NOT_SET.translateColored(ChatFormatting.RED));
                 return InteractionResult.CONSUME;
             }
             if (!itemHandler.isItemValid(0, inHand)) {
-                player.displayClientMessage(Lang.Blocks.EMC_LINK_EMPTY_HAND.translateColored(ChatFormatting.RED, Component.translatable(itemStack.getItem().toString()).setStyle(ColorStyle.BLUE)), true);
+                player.sendOverlayMessage(Lang.Blocks.EMC_LINK_EMPTY_HAND.translateColored(ChatFormatting.RED, Component.translatable(itemStack.getItem().toString()).setStyle(ColorStyle.BLUE)));
                 return InteractionResult.CONSUME;
             }
             setInternalItem(inHand);
-            player.displayClientMessage(Lang.Blocks.EMC_LINK_SET.translateColored(ChatFormatting.GREEN, Component.literal(itemStack.getItem().toString()).setStyle(ColorStyle.BLUE)), true);
+            player.sendOverlayMessage(Lang.Blocks.EMC_LINK_SET.translateColored(ChatFormatting.GREEN, Component.literal(itemStack.getItem().toString()).setStyle(ColorStyle.BLUE)));
             return InteractionResult.SUCCESS;
         }
 
@@ -218,8 +219,8 @@ public class BlockEntityEMCLink extends BlockEntityNBTFilterable implements IHas
                 long bucket = net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants.BUCKET;
                 long extracted = fluidHandler.extract(net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant.of(fluid), bucket, transaction);
                 if (extracted != bucket) {
-                    player.displayClientMessage(Lang.Blocks.EMC_LINK_NOT_ENOUGH_EMC.translateColored(ChatFormatting.RED,
-                        Component.literal(EMCFormat.format(BigInteger.valueOf(IEMCProxy.INSTANCE.getValue(itemStack))))), true);
+                    player.sendOverlayMessage(Lang.Blocks.EMC_LINK_NOT_ENOUGH_EMC.translateColored(ChatFormatting.RED,
+                        Component.literal(EMCFormat.format(BigInteger.valueOf(IEMCProxy.INSTANCE.getValue(itemStack))))));
                     return InteractionResult.FAIL;
                 }
                 player.setItemInHand(hand, net.minecraft.world.item.ItemUtils.createFilledResult(inHand, player, new ItemStack(fluid.getBucket())));
@@ -230,19 +231,19 @@ public class BlockEntityEMCLink extends BlockEntityNBTFilterable implements IHas
 
         if (inHand.isEmpty() || itemStack.is(inHand.getItem())) {
             if (Config.server.limitEmcLinkVendor.get() && remainingExport <= 0) {
-                player.displayClientMessage(Lang.Blocks.EMC_LINK_NO_EXPORT_REMAINING.translateColored(ChatFormatting.RED), true);
+                player.sendOverlayMessage(Lang.Blocks.EMC_LINK_NO_EXPORT_REMAINING.translateColored(ChatFormatting.RED));
                 return InteractionResult.CONSUME;
             }
             ItemStack extract = itemHandler.extractItemInternal(0, itemStack.getMaxStackSize(), false, Config.server.limitEmcLinkVendor.get());
             if (extract.isEmpty()) {
-                player.displayClientMessage(Lang.Blocks.EMC_LINK_NOT_ENOUGH_EMC.translateColored(ChatFormatting.RED, Component.literal(EMCFormat.format(BigInteger.valueOf(IEMCProxy.INSTANCE.getValue(itemStack)))).setStyle(ColorStyle.GREEN)), true);
+                player.sendOverlayMessage(Lang.Blocks.EMC_LINK_NOT_ENOUGH_EMC.translateColored(ChatFormatting.RED, Component.literal(EMCFormat.format(BigInteger.valueOf(IEMCProxy.INSTANCE.getValue(itemStack)))).setStyle(ColorStyle.GREEN)));
                 return InteractionResult.CONSUME;
             }
-            if (!player.getInventory().add(extract)) player.drop(extract, false);
+            if (!player.getInventory().add(extract)) player.drop(extract, false, net.minecraft.util.Prediction.SERVER_ONLY);
             return InteractionResult.SUCCESS;
         }
 
-        player.displayClientMessage(Lang.Blocks.EMC_LINK_EMPTY_HAND.translateColored(ChatFormatting.RED), true);
+        player.sendOverlayMessage(Lang.Blocks.EMC_LINK_EMPTY_HAND.translateColored(ChatFormatting.RED));
         return InteractionResult.CONSUME;
     }
 

@@ -28,23 +28,22 @@ import net.fabricmc.api.Environment;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.function.Consumer;
 
-public class BlockCompactSun extends Block implements IMatterBlock {
+public class BlockCompactSun extends Block implements IMatterBlock, IHasBlockTooltip {
     public BlockCompactSun(BlockBehaviour.Properties properties) {
-        super(properties.pushReaction(PushReaction.BLOCK).mapColor(MapColor.COLOR_YELLOW));
+        super(properties.pushReaction(PushReaction.IMMOVEABLE).mapColor(MapColor.COLOR_YELLOW));
     }
 
     public static BlockBehaviour.Properties getProperties() {
         return BlockBehaviour.Properties.of().strength(2_000_000, 6_000_000).requiresCorrectToolForDrops().lightLevel((state) -> 15);
     }
-
-    @Environment(EnvType.CLIENT)
+    //26.3 removed BlockBehaviour#appendHoverText, so the lines are relayed through TooltipBlockItem instead
     @Override
-    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> list, TooltipFlag tooltipFlag) {
-        super.appendHoverText(stack, context, list, tooltipFlag);
-        list.add(Lang.Blocks.COMPACT_SUN_TOOLTIP.translateColored(ChatFormatting.GRAY));
-        list.add(Lang.Blocks.COMPACT_SUN_TOOLTIP2.translateColored(ChatFormatting.GRAY, Util.getSunBonus()));
-        list.add(Lang.SEE_WIKI.translateColored(ChatFormatting.AQUA));
+    public void addTooltip(ItemStack stack, Consumer<Component> tooltip) {
+        tooltip.accept(Lang.Blocks.COMPACT_SUN_TOOLTIP.translateColored(ChatFormatting.GRAY));
+        tooltip.accept(Lang.Blocks.COMPACT_SUN_TOOLTIP2.translateColored(ChatFormatting.GRAY, Util.getSunBonus()));
+        tooltip.accept(Lang.SEE_WIKI.translateColored(ChatFormatting.AQUA));
     }
 
     @Override

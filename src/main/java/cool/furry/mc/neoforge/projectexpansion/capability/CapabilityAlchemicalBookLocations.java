@@ -23,7 +23,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -110,7 +110,7 @@ public record CapabilityAlchemicalBookLocations(ItemAlchemicalBook.Mode mode, @N
                 throw new BookError.WrongDimensionError();
             }
 
-            player.teleportTo(level, x, y, z, player.getYRot(), player.getXRot());
+            player.teleportTo(level, x, y, z, java.util.Set.of(), player.getYRot(), player.getXRot(), true);
         }
 
         public double distanceFrom(BlockPos pos) {
@@ -149,17 +149,17 @@ public record CapabilityAlchemicalBookLocations(ItemAlchemicalBook.Mode mode, @N
             tag.putInt(TagNames.Y, y);
             tag.putInt(TagNames.Z, z);
             tag.putInt(TagNames.INDEX, index);
-            tag.putString(TagNames.DIMENSION, dimension.location().toString());
+            tag.putString(TagNames.DIMENSION, dimension.identifier().toString());
             return tag;
         }
 
         public static TeleportLocation deserialize(CompoundTag tag) {
-            String name = tag.getString(TagNames.NAME);
-            int x = tag.getInt(TagNames.X);
-            int y = tag.getInt(TagNames.Y);
-            int z = tag.getInt(TagNames.Z);
-            int index = tag.getInt(TagNames.INDEX);
-            ResourceKey<Level> dimension = ResourceKey.create(Registries.DIMENSION, ResourceLocation.parse(tag.getString(TagNames.DIMENSION)));
+            String name = tag.getStringOr(TagNames.NAME, "");
+            int x = tag.getIntOr(TagNames.X, 0);
+            int y = tag.getIntOr(TagNames.Y, 0);
+            int z = tag.getIntOr(TagNames.Z, 0);
+            int index = tag.getIntOr(TagNames.INDEX, 0);
+            ResourceKey<Level> dimension = ResourceKey.create(Registries.DIMENSION, Identifier.parse(tag.getStringOr(TagNames.DIMENSION, "minecraft:overworld")));
             return new TeleportLocation(name, x, y, z, dimension, index);
         }
 
@@ -198,7 +198,7 @@ public record CapabilityAlchemicalBookLocations(ItemAlchemicalBook.Mode mode, @N
             }
 
             public DimensionNotFoundError(ResourceKey<Level> level) {
-                this(Component.translatable(level.location().toLanguageKey()));
+                this(Component.translatable(level.identifier().toLanguageKey()));
             }
 
             public DimensionNotFoundError(String name) {

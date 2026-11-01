@@ -2,6 +2,7 @@ package cool.furry.mc.neoforge.projectexpansion.util;
 
 import cool.furry.mc.neoforge.projectexpansion.config.Config;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
@@ -127,7 +128,7 @@ public class EMCFormat extends DecimalFormat {
         public FormatOptions none() { this.none = true; return this; }
 
         public boolean shouldFormat() {
-            return !none && (force || (Config.client.formatEMC.get() && (ignoreShift || !Screen.hasShiftDown())));
+            return !none && (force || (Config.client.formatEMC.get() && (ignoreShift || !net.minecraft.client.Minecraft.getInstance().hasShiftDown())));
         }
 
         public boolean useShortNames() {
@@ -190,7 +191,16 @@ public class EMCFormat extends DecimalFormat {
         }
 
         public String getName(boolean getShort) {
-            return getShort ? shortName : (name().charAt(0) + name().toLowerCase(Locale.US).substring(1)).trim();
+            if (getShort) {
+                return shortName;
+            }
+            //The long names used to be derived from the enum constant, which always read English no matter the game language.
+            // They now come from the lang files, with the derived English name kept as the fallback.
+            return Language.getInstance().getOrDefault("emc.projectexpansion.postfix." + ordinal(), getDefaultLongName());
+        }
+
+        private String getDefaultLongName() {
+            return (name().charAt(0) + name().toLowerCase(Locale.US).substring(1)).trim();
         }
 
         public double getValue() {

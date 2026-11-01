@@ -6,9 +6,9 @@ import cool.furry.mc.neoforge.projectexpansion.util.TagNames;
 import cool.furry.mc.neoforge.projectexpansion.util.Util;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -28,17 +28,18 @@ public class BlockEntityOwnable extends BlockEntityBase {
     }
 
     @Override
-    public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        if(tag.hasUUID(TagNames.OWNER)) owner = tag.getUUID(TagNames.OWNER);
-        if(tag.contains(TagNames.OWNER_NAME, Tag.TAG_STRING)) ownerName = tag.getString(TagNames.OWNER_NAME);
+    public void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        //26.3: ValueInput exposes typed codecs, so the old hasUUID/getUUID pair became a codec read
+        input.read(TagNames.OWNER, UUIDUtil.CODEC).ifPresent(value -> owner = value);
+        input.getString(TagNames.OWNER_NAME).ifPresent(value -> ownerName = value);
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        tag.putUUID(TagNames.OWNER, owner);
-        tag.putString(TagNames.OWNER_NAME, ownerName);
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        output.store(TagNames.OWNER, UUIDUtil.CODEC, owner);
+        output.putString(TagNames.OWNER_NAME, ownerName);
     }
 
     public void setOwner(Player player) {
@@ -55,10 +56,10 @@ public class BlockEntityOwnable extends BlockEntityBase {
     // return true if ownership not checked, or if passed
     public boolean handleActivation(Player player, ActivationType activationType) {
         switch (activationType) {
-            case DISPLAY_NAME -> player.displayClientMessage(Component.literal(ownerName), true);
+            case DISPLAY_NAME -> player.sendOverlayMessage(Component.literal(ownerName));
             case CHECK_OWNERSHIP -> {
                 if (!owner.equals(player.getUUID())) {
-                    player.displayClientMessage(Lang.NOT_OWNER.translateColored(ChatFormatting.RED, Component.literal(ownerName).setStyle(ColorStyle.RED)), true);
+                    player.sendOverlayMessage(Lang.NOT_OWNER.translateColored(ChatFormatting.RED, Component.literal(ownerName).setStyle(ColorStyle.RED)));
                     return false;
                 }
             }

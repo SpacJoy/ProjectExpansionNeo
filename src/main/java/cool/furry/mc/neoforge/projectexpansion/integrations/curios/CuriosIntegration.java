@@ -1,6 +1,7 @@
 package cool.furry.mc.neoforge.projectexpansion.integrations.curios;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import moze_intel.projecte.api.item_handlers.IItemHandlerModifiable;
 import net.fabricmc.loader.api.FabricLoader;
@@ -16,15 +17,16 @@ public final class CuriosIntegration {
     }
     private static final class Integrator {
         static Optional<IItemHandlerModifiable> inventory(Player player) {
-            return dev.emi.trinkets.api.TrinketsApi.getTrinketComponent(player).flatMap(component -> {
-                var inventories = new ArrayList<dev.emi.trinkets.api.TrinketInventory>();
-                for (var group : component.getInventory().values()) {
-                    var inventory = group.get(TABLET_SLOT_ID);
-                    if (inventory != null) inventories.add(inventory);
-                }
-                return inventories.isEmpty() ? Optional.empty()
+            //26.3 note: Trinkets was rewritten by Patbox. The api package moved from dev.emi.trinkets.api to
+            //eu.pb4.trinkets.api, TrinketComponent is now TrinketAttachment (reached through TrinketsApi#getAttachment),
+            //and the inventories are already flattened into a single map, so there is no per-group lookup any more.
+            eu.pb4.trinkets.api.TrinketAttachment attachment = eu.pb4.trinkets.api.TrinketsApi.getAttachment(player);
+            if (attachment == null) {
+                return Optional.empty();
+            }
+            List<eu.pb4.trinkets.api.TrinketInventory> inventories = new ArrayList<>(attachment.getInventories().values());
+            return inventories.isEmpty() ? Optional.empty()
                     : Optional.of(new moze_intel.projecte.integration.trinkets.TrinketItemHandler(inventories));
-            });
         }
     }
 }

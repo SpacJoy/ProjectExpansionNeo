@@ -9,7 +9,7 @@ import cool.furry.mc.neoforge.projectexpansion.registries.Items;
 import cool.furry.mc.neoforge.projectexpansion.util.IHasCapability;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.item.Item;
 import cool.furry.mc.neoforge.projectexpansion.platform.CapabilityRegistrar;
 
@@ -18,7 +18,7 @@ public class CapabilityEvents {
     public static void registerCapabilities(CapabilityRegistrar event) {
         event.registerEntity(
                 Capabilities.ALCHEMICAL_BOOK_LOCATIONS_ENTITY,
-                EntityType.PLAYER,
+                EntityTypes.PLAYER,
                 (player, dir) -> new CapabilityAlchemicalBookLocations(ItemAlchemicalBook.Mode.PLAYER, (ServerPlayer) player, null)
         );
         event.registerItem(

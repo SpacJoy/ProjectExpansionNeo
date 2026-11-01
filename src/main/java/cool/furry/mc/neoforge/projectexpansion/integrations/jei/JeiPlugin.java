@@ -6,13 +6,13 @@ import mezz.jei.api.IModPlugin;
 import mezz.jei.api.constants.RecipeTypes;
 import mezz.jei.api.registration.IRecipeTransferRegistration;
 import mezz.jei.api.runtime.IJeiRuntime;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 @mezz.jei.api.JeiPlugin
 public class JeiPlugin implements IModPlugin {
     public static IJeiRuntime RUNTIME;
 
-    public ResourceLocation getPluginUid() {
+    public Identifier getPluginUid() {
         return Main.rl("jei_plugin");
     }
 

@@ -32,7 +32,7 @@ public class ItemTooltipEvents {
             return;
         }
 
-        learnedTooltip: if(Config.client.enableLearnedTooltip.get() && (!ProjectEConfig.client.shiftEmcToolTips.get() || Screen.hasShiftDown())) {
+        learnedTooltip: if(Config.client.enableLearnedTooltip.get() && (!ProjectEConfig.client.shiftEmcToolTips.get() || net.minecraft.client.Minecraft.getInstance().hasShiftDown())) {
             boolean hasValue = IEMCProxy.INSTANCE.hasValue(stack);
             if (!hasValue) {
                 break learnedTooltip;

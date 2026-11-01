@@ -10,7 +10,8 @@ import moze_intel.projecte.network.PENetwork;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.fabricmc.fabric.api.event.Event;
 import net.minecraft.client.gui.screens.MenuScreens;
 
@@ -28,11 +29,11 @@ public final class ClientEvents {
         var phase = Main.rl("after_projecte");
         ItemTooltipCallback.EVENT.addPhaseOrdering(Event.DEFAULT_PHASE, phase);
         ItemTooltipCallback.EVENT.register(phase, ItemTooltipEvents::itemTooltipEvent);
-        HudRenderCallback.EVENT.register(EMCDisplay.INSTANCE::render);
+        HudElementRegistry.attachElementAfter(VanillaHudElements.CHAT, Main.rl("emc_display"), EMCDisplay.INSTANCE);
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> EMCDisplay.reset());
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             EMCDisplay.onTick();
-            if (Keybinds.OPEN_TRANSMUTATION_TABLET.consumeClick() && client.screen == null && client.player != null) {
+            if (Keybinds.OPEN_TRANSMUTATION_TABLET.consumeClick() && client.gui.screen() == null && client.player != null) {
                 PENetwork.sendToServer(PacketOpenTransmutationTablet.INSTANCE);
             }
         });

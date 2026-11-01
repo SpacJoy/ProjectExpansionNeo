@@ -15,14 +15,14 @@ public class BlockEntityNBTFilterable extends BlockEntityOwnable {
     }
 
     public void toggleFilter(Player player) {
-        if(level == null || level.isClientSide || !this.handleActivation(player, ActivationType.CHECK_OWNERSHIP)) return;
+        if(level == null || level.isClientSide() || !this.handleActivation(player, ActivationType.CHECK_OWNERSHIP)) return;
         boolean status = getFilterStatus();
         if(status) {
             setFilterStatus(false);
-            player.displayClientMessage(Lang.NBT_FILTER_DISABLED.translateColored(ChatFormatting.RED), true);
+            player.sendOverlayMessage(Lang.NBT_FILTER_DISABLED.translateColored(ChatFormatting.RED));
         } else {
             setFilterStatus(true);
-            player.displayClientMessage(Lang.NBT_FILTER_ENABLED.translateColored(ChatFormatting.GREEN), true);
+            player.sendOverlayMessage(Lang.NBT_FILTER_ENABLED.translateColored(ChatFormatting.GREEN));
         }
     }
 
@@ -31,7 +31,7 @@ public class BlockEntityNBTFilterable extends BlockEntityOwnable {
     }
 
     public void setFilterStatus(boolean status) {
-        if(level == null || level.isClientSide) return;
+        if(level == null || level.isClientSide()) return;
         level.setBlockAndUpdate(getBlockPos(), getBlockState().setValue(FILTER, status));
     }
 }

@@ -3,7 +3,7 @@ package cool.furry.mc.neoforge.projectexpansion.platform;
 import java.util.function.Consumer;
 import moze_intel.projecte.gameObjs.registration.impl.ContainerTypeDeferredRegister;
 import moze_intel.projecte.gameObjs.registration.impl.ContainerTypeDeferredRegister.RawScreenData;
-import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
+import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -22,7 +22,8 @@ public final class Menus {
 
     public static void open(Player player, MenuProvider provider, Consumer<RegistryFriendlyByteBuf> writer) {
         if (!(player instanceof ServerPlayer serverPlayer)) return;
-        serverPlayer.openMenu(new ExtendedScreenHandlerFactory<RawScreenData>() {
+        //26.3 moved the extended menu factory into the menu module and renamed it to ExtendedMenuProvider
+        serverPlayer.openMenu(new ExtendedMenuProvider<RawScreenData>() {
             @Override
             public RawScreenData getScreenOpeningData(ServerPlayer target) {
                 return ContainerTypeDeferredRegister.createScreenData(target.registryAccess(), writer);

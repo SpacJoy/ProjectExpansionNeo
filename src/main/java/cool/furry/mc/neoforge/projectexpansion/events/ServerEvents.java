@@ -42,7 +42,7 @@ public class ServerEvents {
         if (protectionAmount >= 100) return;
 
         if(!hasCompactSun) {
-            for (ItemStack stack : player.getInventory().items) {
+            for (ItemStack stack : player.getInventory().getNonEquipmentItems()) {
                 if (stack.getItem() == Items.COMPACT_SUN.get()) {
                     hasCompactSun = true;
                     break;
@@ -51,7 +51,7 @@ public class ServerEvents {
         }
 
         if (hasCompactSun) {
-            player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 5, 3 - protectionLevel, false, false));
+            player.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 5, 3 - protectionLevel, false, false));
         }
     }
 

@@ -4,7 +4,6 @@ import com.mojang.serialization.MapCodec;
 import cool.furry.mc.neoforge.projectexpansion.block.entity.BlockEntityCollector;
 import cool.furry.mc.neoforge.projectexpansion.config.Config;
 import cool.furry.mc.neoforge.projectexpansion.registries.BlockEntityTypes;
-import cool.furry.mc.neoforge.projectexpansion.registries.BlockTypes;
 import cool.furry.mc.neoforge.projectexpansion.util.*;
 import moze_intel.projecte.api.capabilities.PECapabilities;
 import moze_intel.projecte.api.capabilities.item.IItemEmcHolder;
@@ -42,13 +41,14 @@ import cool.furry.mc.neoforge.projectexpansion.platform.InventoryCapabilities;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.function.Consumer;
 
 @SuppressWarnings("deprecation")
-public class BlockCollector extends BlockDirection implements IHasMatter, EntityBlock, IMatterBlock {
+public class BlockCollector extends BlockDirection implements IHasMatter, EntityBlock, IMatterBlock, IHasBlockTooltip {
     private final Matter matter;
 
     public BlockCollector(BlockBehaviour.Properties properties, Matter matter) {
-        super(properties.pushReaction(PushReaction.BLOCK).mapColor(matter.mapColor == null ? MapColor.NONE : matter.mapColor.get()));
+        super(properties.pushReaction(PushReaction.IMMOVEABLE).mapColor(matter.mapColor == null ? MapColor.NONE : matter.mapColor.get()));
         this.matter = matter;
     }
 
@@ -87,30 +87,28 @@ public class BlockCollector extends BlockDirection implements IHasMatter, Entity
     public IMatterType getMatterType() {
         return Util.getMatterForProjectE(getMatter());
     }
-
-    @Environment(EnvType.CLIENT)
+    //26.3 removed BlockBehaviour#appendHoverText, so the lines are relayed through TooltipBlockItem instead
     @Override
-    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> list, TooltipFlag tooltipFlag) {
-        super.appendHoverText(stack, context, list, tooltipFlag);
-        list.add(Lang.Blocks.COLLECTOR_TOOLTIP.translateColored(ChatFormatting.GRAY));
-        list.add(Lang.Blocks.COLLECTOR_EMC.translateColored(ChatFormatting.GRAY, EMCFormat.getComponent(getMatter().getCollectorOutputForTicks(Config.server.tickDelay.get())).setStyle(ColorStyle.GREEN)));
+    public void addTooltip(ItemStack stack, Consumer<Component> tooltip) {
+        tooltip.accept(Lang.Blocks.COLLECTOR_TOOLTIP.translateColored(ChatFormatting.GRAY));
+        tooltip.accept(Lang.Blocks.COLLECTOR_EMC.translateColored(ChatFormatting.GRAY, EMCFormat.getComponent(getMatter().getCollectorOutputForTicks(Config.server.tickDelay.get())).setStyle(ColorStyle.GREEN)));
         if(stack.getCount() > 1) {
-            list.add(Lang.Blocks.COLLECTOR_STACK_EMC.translateColored(ChatFormatting.GRAY, EMCFormat.getComponent(getMatter().getCollectorOutputForTicks(Config.server.tickDelay.get()).multiply(BigDecimal.valueOf(stack.getCount()))).setStyle(ColorStyle.GREEN)));
+            tooltip.accept(Lang.Blocks.COLLECTOR_STACK_EMC.translateColored(ChatFormatting.GRAY, EMCFormat.getComponent(getMatter().getCollectorOutputForTicks(Config.server.tickDelay.get()).multiply(BigDecimal.valueOf(stack.getCount()))).setStyle(ColorStyle.GREEN)));
         }
-        list.add(Lang.Blocks.COLLECTOR_MAX_STORAGE.translateColored(ChatFormatting.GRAY, EMCFormat.getComponent(Fuel.getCollectorEMCLimit(getMatter())).setStyle(ColorStyle.GREEN)));
-        list.add(Lang.SEE_WIKI.translateColored(ChatFormatting.AQUA));
+        tooltip.accept(Lang.Blocks.COLLECTOR_MAX_STORAGE.translateColored(ChatFormatting.GRAY, EMCFormat.getComponent(Fuel.getCollectorEMCLimit(getMatter())).setStyle(ColorStyle.GREEN)));
+        tooltip.accept(Lang.SEE_WIKI.translateColored(ChatFormatting.AQUA));
     }
 
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        if (type == BlockEntityTypes.COLLECTOR.get() && !level.isClientSide) return BlockEntityCollector::tickServer;
+        if (type == BlockEntityTypes.COLLECTOR.get() && !level.isClientSide()) return BlockEntityCollector::tickServer;
         return null;
     }
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
-        if (level.isClientSide) {
+        if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
         }
 
@@ -129,16 +127,17 @@ public class BlockCollector extends BlockDirection implements IHasMatter, Entity
 
     @Override
     @Deprecated
-    public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
+    //26.3 added a Direction parameter to getAnalogOutputSignal
+    public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos, Direction direction) {
         CollectorMK1BlockEntity collector = WorldHelper.getBlockEntity(CollectorMK1BlockEntity.class, level, pos, true);
         if (collector == null) {
             //If something went wrong fallback to default implementation
-            return super.getAnalogOutputSignal(state, level, pos);
+            return super.getAnalogOutputSignal(state, level, pos, direction);
         }
         moze_intel.projecte.api.item_handlers.IItemHandler handler = WorldHelper.getItemHandler(level, pos, state, collector, Direction.UP);
         if (handler == null) {
             //If something went wrong fallback to default implementation
-            return super.getAnalogOutputSignal(state, level, pos);
+            return super.getAnalogOutputSignal(state, level, pos, direction);
         }
         ItemStack charging = handler.getStackInSlot(CollectorMK1BlockEntity.UPGRADING_SLOT);
         if (charging.isEmpty()) {
@@ -152,20 +151,13 @@ public class BlockCollector extends BlockDirection implements IHasMatter, Entity
     }
 
     @Override
-    @Deprecated
-    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
-        if (state.getBlock() != newState.getBlock()) {
-            BlockEntityCollector collector = WorldHelper.getBlockEntity(BlockEntityCollector.class, level, pos);
-            if (collector != null) {
-                //Clear the ghost slot so calling super doesn't drop the item in it
-                collector.clearLocked();
-            }
-            super.onRemove(state, level, pos, newState, isMoving);
+    //26.3 replaced onRemove with affectNeighborsAfterRemoval, which no longer receives the new state
+    protected void affectNeighborsAfterRemoval(BlockState state, net.minecraft.server.level.ServerLevel level, BlockPos pos, boolean isMoving) {
+        BlockEntityCollector collector = WorldHelper.getBlockEntity(BlockEntityCollector.class, level, pos);
+        if (collector != null) {
+            //Clear the ghost slot so calling super does not drop the item in it
+            collector.clearLocked();
         }
-    }
-
-    @Override
-    protected MapCodec<? extends Block> codec() {
-        return BlockTypes.COLLECTOR.get();
+        super.affectNeighborsAfterRemoval(state, level, pos, isMoving);
     }
 }

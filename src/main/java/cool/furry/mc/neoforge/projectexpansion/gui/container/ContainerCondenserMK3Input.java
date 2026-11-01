@@ -12,7 +12,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.BlockHitResult;
@@ -99,7 +99,7 @@ public class ContainerCondenserMK3Input extends ContainerBase {
     }
 
     @Override
-    public void clicked(int slot, int button, ClickType flag, Player player) {
+    public void clicked(int slot, int button, ContainerInput flag, Player player) {
         if (slot == 0) {
             if (handler.attemptCondenserSet(player)) {
                 this.broadcastChanges();

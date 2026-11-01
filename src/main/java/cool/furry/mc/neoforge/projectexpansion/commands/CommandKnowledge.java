@@ -113,7 +113,8 @@ public class CommandKnowledge {
             }
             return 1;
         }
-        Item item = ItemArgument.getItem(ctx, "item").getItem();
+        //26.3 turned ItemInput#getItem into a holder accessor, so the raw item comes off item().value()
+        Item item = ItemArgument.getItem(ctx, "item").item().value();
 
         @Nullable IKnowledgeProvider provider = Util.getKnowledgeProvider(player);
         if(provider == null) {

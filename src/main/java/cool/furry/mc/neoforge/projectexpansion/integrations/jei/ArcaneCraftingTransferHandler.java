@@ -1,6 +1,7 @@
 package cool.furry.mc.neoforge.projectexpansion.integrations.jei;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+//26.3 flattened the GUI matrix stack, so the 2D variant is what GuiGraphicsExtractor exposes
+import org.joml.Matrix3x2fStack;
 import cool.furry.mc.neoforge.projectexpansion.gui.container.ContainerArcaneTransmutationTablet;
 import cool.furry.mc.neoforge.projectexpansion.net.packets.to_server.PacketArcaneTransmutationTabletRecipeTransfer;
 import cool.furry.mc.neoforge.projectexpansion.registries.MenuTypes;
@@ -8,11 +9,12 @@ import mezz.jei.api.constants.RecipeTypes;
 import mezz.jei.api.gui.ingredient.IRecipeSlotView;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.recipe.RecipeIngredientRole;
-import mezz.jei.api.recipe.RecipeType;
+//26.3 made RecipeTypes constants IRecipeHolderType instances, which are IRecipeType<RecipeHolder<T>>
+import mezz.jei.api.recipe.types.IRecipeHolderType;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
 import moze_intel.projecte.api.proxy.IEMCProxy;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
@@ -42,7 +44,7 @@ public class ArcaneCraftingTransferHandler implements IRecipeTransferHandler<Con
     }
 
     @Override
-    public RecipeType<RecipeHolder<CraftingRecipe>> getRecipeType() {
+    public IRecipeHolderType<CraftingRecipe> getRecipeType() {
         return RecipeTypes.CRAFTING;
     }
 
@@ -105,10 +107,10 @@ public class ArcaneCraftingTransferHandler implements IRecipeTransferHandler<Con
             return 0;
         }
 
-        public void showError(GuiGraphics guiGraphics, int mouseX, int mouseY, IRecipeSlotsView slots, int recipeX, int recipeY) {
-            PoseStack poseStack = guiGraphics.pose();
-            poseStack.pushPose();
-            poseStack.translate((float)recipeX, (float)recipeY, 0.0F);
+        public void showError(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, IRecipeSlotsView slots, int recipeX, int recipeY) {
+            Matrix3x2fStack poseStack = guiGraphics.pose();
+            poseStack.pushMatrix();
+            poseStack.translate((float)recipeX, (float)recipeY);
 
             for(int i = 0; i < this.iRecipeSlotsView.getSlotViews().size(); ++i) {
                 if (this.missing.contains(i)) {
@@ -116,7 +118,7 @@ public class ArcaneCraftingTransferHandler implements IRecipeTransferHandler<Con
                 }
             }
 
-            poseStack.popPose();
+            poseStack.popMatrix();
         }
     }
 }

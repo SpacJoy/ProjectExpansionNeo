@@ -10,7 +10,7 @@ import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.Widget;
 import moze_intel.projecte.api.proxy.IEMCProxy;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
@@ -66,7 +66,7 @@ public class ArcaneCraftingTransferHandler implements StandardRecipeHandler<Cont
     }
 
     @Override
-    public void render(EmiRecipe recipe, EmiCraftContext<ContainerArcaneTransmutationTablet> context, List<Widget> widgets, GuiGraphics graphics) {
+    public void render(EmiRecipe recipe, EmiCraftContext<ContainerArcaneTransmutationTablet> context, List<Widget> widgets, GuiGraphicsExtractor graphics) {
         StandardRecipeHandler.renderMissing(recipe, buildEmcAwareInventory(recipe, context.getScreenHandler()), widgets, graphics);
     }
 

@@ -11,7 +11,7 @@ import moze_intel.projecte.api.item_handlers.IItemHandler;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import net.minecraft.core.Direction;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 
 public final class InventoryCapabilities {
     public static final class ItemHandler {
@@ -21,7 +21,7 @@ public final class InventoryCapabilities {
             PEEntityCapability.create(Main.rl("player_inventory"), IItemHandler.class);
     }
     public static void register() {
-        ItemHandler.ENTITY.registerForType((player, context) -> new ContainerItemHandler(player.getInventory()), EntityType.PLAYER);
+        ItemHandler.ENTITY.registerForType((player, context) -> new ContainerItemHandler(player.getInventory()), EntityTypes.PLAYER);
         ItemStorage.SIDED.registerFallback((world, pos, state, entity, side) -> {
             if (entity instanceof BlockEntityEMCLink link) return link.fabricItems();
             if (entity instanceof BlockEntityTransmutationInterface table) return table.fabricItems();

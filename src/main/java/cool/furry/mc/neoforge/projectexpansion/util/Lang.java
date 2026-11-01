@@ -27,6 +27,8 @@ public enum Lang implements ILangEntry {
     ALCHEMICAL_COLLECTION("text", "alchemical_collection"),
     FILTER_STATUS("text", "filter_status"),
     EMC_PER_SECOND("text", "emc_per_second"),
+    EMC_DISPLAY("text", "emc_display"),
+    EMC_DISPLAY_RATE("text", "emc_display_rate"),
     EMC_STORAGE("text", "emc_storage"),
     EMC_TRANSFER_RATE("text", "emc_transfer_rate"),
     CHARGE_RATE("text", "charge_rate"),
@@ -52,7 +54,7 @@ public enum Lang implements ILangEntry {
 
     private String key;
     Lang(String type, String... path) {
-        this(net.minecraft.Util.makeDescriptionId(type, Main.rl(String.join(".", path))));
+        this(net.minecraft.util.Util.makeDescriptionId(type, Main.rl(String.join(".", path))));
     }
 
     Lang(String key) {
@@ -145,7 +147,7 @@ public enum Lang implements ILangEntry {
 
         private String key;
         Blocks(String... path) {
-            this.key = net.minecraft.Util.makeDescriptionId("block", Main.rl(String.join(".", path)));
+            this.key = net.minecraft.util.Util.makeDescriptionId("block", Main.rl(String.join(".", path)));
         }
 
         @Override
@@ -264,7 +266,7 @@ public enum Lang implements ILangEntry {
 
         private String key;
         Commands(String... path) {
-            this.key = net.minecraft.Util.makeDescriptionId("command", Main.rl(String.join(".", path)));
+            this.key = net.minecraft.util.Util.makeDescriptionId("command", Main.rl(String.join(".", path)));
         }
 
         @Override
@@ -345,7 +347,7 @@ public enum Lang implements ILangEntry {
         private String key;
 
         Items(String... path) {
-            this.key = net.minecraft.Util.makeDescriptionId("item", Main.rl(String.join(".", path)));
+            this.key = net.minecraft.util.Util.makeDescriptionId("item", Main.rl(String.join(".", path)));
         }
 
         @Override
@@ -406,7 +408,7 @@ public enum Lang implements ILangEntry {
         private String key;
 
         GUI(String... path) {
-            this.key = net.minecraft.Util.makeDescriptionId("gui", Main.rl(String.join(".", path)));
+            this.key = net.minecraft.util.Util.makeDescriptionId("gui", Main.rl(String.join(".", path)));
         }
 
         @Override
@@ -448,7 +450,7 @@ public enum Lang implements ILangEntry {
         private String key;
 
         Configuration(String... path) {
-            this.key = net.minecraft.Util.makeDescriptionId("configuration", Main.rl(String.join(".", path)));
+            this.key = net.minecraft.util.Util.makeDescriptionId("configuration", Main.rl(String.join(".", path)));
         }
 
         @Override

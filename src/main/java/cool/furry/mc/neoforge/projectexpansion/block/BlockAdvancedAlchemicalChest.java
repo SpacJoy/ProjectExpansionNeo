@@ -4,7 +4,6 @@ import com.mojang.serialization.MapCodec;
 import cool.furry.mc.neoforge.projectexpansion.block.entity.BlockEntityAdvancedAlchemicalChest;
 import cool.furry.mc.neoforge.projectexpansion.gui.container.ContainerAdvancedAlchemicalChest;
 import cool.furry.mc.neoforge.projectexpansion.registries.BlockEntityTypes;
-import cool.furry.mc.neoforge.projectexpansion.registries.BlockTypes;
 import cool.furry.mc.neoforge.projectexpansion.util.IHasColor;
 import cool.furry.mc.neoforge.projectexpansion.util.Lang;
 import moze_intel.projecte.utils.WorldHelper;
@@ -17,7 +16,7 @@ import net.minecraft.stats.Stats;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
+
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.piglin.PiglinAi;
@@ -32,6 +31,8 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -58,10 +59,11 @@ import moze_intel.projecte.api.item_handlers.ItemHandlerHelper;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 // Many methods lovingly borrowed (stolen) from ProjectE
 // https://github.com/sinkillerj/ProjectE/blob/mc1.18.x/src/main/java/moze_intel/projecte/gameObjs/blocks/AlchemicalChest.java
-public class BlockAdvancedAlchemicalChest extends HorizontalDirectionalBlock implements EntityBlock, SimpleWaterloggedBlock, IHasColor {
+public class BlockAdvancedAlchemicalChest extends HorizontalDirectionalBlock implements EntityBlock, SimpleWaterloggedBlock, IHasColor, IHasBlockTooltip {
 	public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 
 	private static final VoxelShape SHAPE = Block.box(1.0D, 0.0D, 1.0D, 15.0D, 14.0D, 15.0D);
@@ -82,17 +84,17 @@ public class BlockAdvancedAlchemicalChest extends HorizontalDirectionalBlock imp
 		return color;
 	}
 
-	@Environment(EnvType.CLIENT)
+	//26.3 removed BlockBehaviour#appendHoverText, so the tooltip lines travel through the block item instead
 	@Override
-	public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> list, TooltipFlag tooltipFlag) {
-		super.appendHoverText(stack, context, list, tooltipFlag);
-		list.add(Lang.Blocks.ADVANCED_ALCHEMICAL_CHEST_TOOLTIP.translateColored(ChatFormatting.GRAY));
-		list.add(Lang.SEE_WIKI.translateColored(ChatFormatting.AQUA));
+	public void addTooltip(ItemStack stack, Consumer<Component> tooltip) {
+		tooltip.accept(Lang.Blocks.ADVANCED_ALCHEMICAL_CHEST_TOOLTIP.translateColored(ChatFormatting.GRAY));
+		tooltip.accept(Lang.SEE_WIKI.translateColored(ChatFormatting.AQUA));
 	}
 
 	@Override
     public RenderShape getRenderShape(BlockState p_51567_) {
-		return RenderShape.ENTITYBLOCK_ANIMATED;
+		//26.3 dropped ENTITYBLOCK_ANIMATED; animated blocks are now rendered as plain models with a BER
+		return RenderShape.MODEL;
 	}
 
 	@Override
@@ -108,7 +110,7 @@ public class BlockAdvancedAlchemicalChest extends HorizontalDirectionalBlock imp
 
 	@Override
 	protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
-		if (level.isClientSide) {
+		if (level.isClientSide()) {
 			return InteractionResult.SUCCESS;
 		}
 
@@ -118,26 +120,28 @@ public class BlockAdvancedAlchemicalChest extends HorizontalDirectionalBlock imp
 		InteractionHand hand = player.getUsedItemHand();
 		cool.furry.mc.neoforge.projectexpansion.platform.Menus.open(player, new ContainerProvider(blockEntity, hand), (buf) -> {
 			buf.writeEnum(hand);
-			buf.writeByte(player.getInventory().selected);
+			buf.writeByte(player.getInventory().getSelectedSlot());
 			buf.writeBoolean(false);
 			buf.writeBlockPos(pos);
 		});
 		player.awardStat(Stats.OPEN_CHEST);
-		PiglinAi.angerNearbyPiglins(player, true);
+		//26.3 made angerNearbyPiglins take the ServerLevel explicitly
+		PiglinAi.angerNearbyPiglins((ServerLevel) level, player, true);
 
 		return InteractionResult.CONSUME;
 	}
 
 	@Override
-	protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-		if (level.isClientSide) {
-			return ItemInteractionResult.SUCCESS;
+	protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+		if (level.isClientSide()) {
+			return InteractionResult.SUCCESS;
 		}
 
 		BlockEntityAdvancedAlchemicalChest blockEntity = WorldHelper.getBlockEntity(BlockEntityAdvancedAlchemicalChest.class, level, pos);
-		if (blockEntity == null) return ItemInteractionResult.FAIL;
+		if (blockEntity == null) return InteractionResult.FAIL;
 		if (player.isCrouching()) {
-			PiglinAi.angerNearbyPiglins(player, true);
+			//26.3 made angerNearbyPiglins take the ServerLevel explicitly
+				PiglinAi.angerNearbyPiglins((ServerLevel) level, player, true);
 			return blockEntity.handleItemActivation(player, stack);
 		}
 
@@ -154,7 +158,7 @@ public class BlockAdvancedAlchemicalChest extends HorizontalDirectionalBlock imp
 	@Nullable
 	@Override
 	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-		if (type == BlockEntityTypes.ADVANCED_ALCHEMICAL_CHEST.get() && level.isClientSide) return BlockEntityAdvancedAlchemicalChest::tickClient;
+		if (type == BlockEntityTypes.ADVANCED_ALCHEMICAL_CHEST.get() && level.isClientSide()) return BlockEntityAdvancedAlchemicalChest::tickClient;
 		return null;
 	}
 
@@ -180,15 +184,15 @@ public class BlockAdvancedAlchemicalChest extends HorizontalDirectionalBlock imp
 	}
 
 	@Override
-	public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
+	public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos, Direction direction) {
 		BlockEntityAdvancedAlchemicalChest blockEntity = WorldHelper.getBlockEntity(BlockEntityAdvancedAlchemicalChest.class, level, pos);
 		if (blockEntity == null) {
-			return super.getAnalogOutputSignal(state, level, pos);
+			return super.getAnalogOutputSignal(state, level, pos, direction);
 		}
 
 		IItemHandler handler = WorldHelper.getItemHandler(level, pos, state, blockEntity, Direction.UP);
 		if (handler == null) {
-			return super.getAnalogOutputSignal(state, level, pos);
+			return super.getAnalogOutputSignal(state, level, pos, direction);
 		}
 
 		return ItemHandlerHelper.calcRedstoneFromInventory(handler);
@@ -205,11 +209,13 @@ public class BlockAdvancedAlchemicalChest extends HorizontalDirectionalBlock imp
 	}
 
 	@Override
-	public BlockState updateShape(BlockState state, Direction facing, BlockState facingState, LevelAccessor level, BlockPos currentPos, BlockPos facingPos) {
+	//26.3 reshaped updateShape around a ScheduledTickAccess and an explicit RandomSource
+	public BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess tickAccess, BlockPos currentPos, Direction facing,
+			BlockPos facingPos, BlockState facingState, RandomSource random) {
 		if (state.getValue(BlockStateProperties.WATERLOGGED)) {
-			level.scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
+			tickAccess.scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
 		}
-		return super.updateShape(state, facing, facingState, level, currentPos, facingPos);
+		return super.updateShape(state, level, tickAccess, currentPos, facing, facingPos, facingState, random);
 	}
 
 	@Override
@@ -219,11 +225,6 @@ public class BlockAdvancedAlchemicalChest extends HorizontalDirectionalBlock imp
 		return blockEntity != null && blockEntity.triggerEvent(id, param);
 	}
 
-	@Override
-	protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
-		return BlockTypes.ADVANCED_ALCHEMICAL_CHEST.get();
-	}
-
 	// graciously borrowed from ProjectE
 	// https://github.com/sinkillerj/ProjectE/blob/98aee771bdb09beecf51b5608938d93de6f1afb6/src/main/java/moze_intel/projecte/gameObjs/items/AlchemicalBag.java#L76-L100
 	private record ContainerProvider(BlockEntityAdvancedAlchemicalChest blockEntity, InteractionHand hand) implements MenuProvider {
@@ -231,7 +232,7 @@ public class BlockAdvancedAlchemicalChest extends HorizontalDirectionalBlock imp
 		public AbstractContainerMenu createMenu(int windowId, Inventory playerInventory, Player player) {
 			IItemHandlerModifiable inv = (IItemHandlerModifiable) blockEntity.getBag();
             if (inv == null) throw new NullPointerException("Bag is null");
-			return new ContainerAdvancedAlchemicalChest(windowId, playerInventory, hand, inv, playerInventory.selected, false, blockEntity);
+			return new ContainerAdvancedAlchemicalChest(windowId, playerInventory, hand, inv, playerInventory.getSelectedSlot(), false, blockEntity);
 		}
 
 		@Override

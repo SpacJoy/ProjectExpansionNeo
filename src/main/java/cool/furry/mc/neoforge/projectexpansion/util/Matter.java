@@ -1,5 +1,7 @@
 package cool.furry.mc.neoforge.projectexpansion.util;
 
+import cool.furry.mc.neoforge.projectexpansion.item.TooltipBlockItem;
+
 import cool.furry.mc.neoforge.projectexpansion.block.*;
 import cool.furry.mc.neoforge.projectexpansion.config.Config;
 import cool.furry.mc.neoforge.projectexpansion.item.ItemCompressedCollector;
@@ -326,27 +328,27 @@ public enum Matter implements StringRepresentable, IMatterType {
             case MATTER_BLOCK -> {
                 if (hasBlock) {
                     blockMatterBlock = Blocks.Registry.register(String.format("%s_matter_block", name), () -> new BlockMatter(BlockMatter.getProperties(this), this));
-                    itemMatterBlock = Items.Registry.register(String.format("%s_matter_block", name), () -> new BlockItem(Objects.requireNonNull(blockMatterBlock).get(), new Item.Properties().rarity(getRarity())));
+                    itemMatterBlock = Items.Registry.register(String.format("%s_matter_block", name), () -> new BlockItem(Objects.requireNonNull(blockMatterBlock).get(), new Item.Properties().rarity(getRarity()).useBlockDescriptionPrefix()));
                 }
             }
 
             case COLLECTOR -> {
                 collector = Blocks.Registry.register(String.format("%s_collector", name), () -> new BlockCollector(BlockCollector.getProperties(this), this));
-                itemCollector = Items.Registry.register(String.format("%s_collector", name), () -> new BlockItem(Objects.requireNonNull(collector).get(), new Item.Properties().rarity(getRarity())));
+                itemCollector = Items.Registry.register(String.format("%s_collector", name), () -> new TooltipBlockItem(Objects.requireNonNull(collector).get(), new Item.Properties().rarity(getRarity())));
             }
 
             case COMPRESSED_COLLECTOR -> itemCompressedCollector = Items.Registry.register(String.format("%s_compressed_collector", name), () -> new ItemCompressedCollector(this));
             case POWER_FLOWER -> {
                 powerFlower = Blocks.Registry.register(String.format("%s_power_flower", name), () -> new BlockPowerFlower(BlockPowerFlower.getProperties(this), this));
-                itemPowerFlower = Items.Registry.register(String.format("%s_power_flower", name), () -> new BlockItem(Objects.requireNonNull(powerFlower).get(), new Item.Properties().rarity(getRarity())));
+                itemPowerFlower = Items.Registry.register(String.format("%s_power_flower", name), () -> new TooltipBlockItem(Objects.requireNonNull(powerFlower).get(), new Item.Properties().rarity(getRarity())));
             }
             case RELAY -> {
                 relay = Blocks.Registry.register(String.format("%s_relay", name), () -> new BlockRelay(BlockRelay.getProperties(this), this));
-                itemRelay = Items.Registry.register(String.format("%s_relay", name), () -> new BlockItem(Objects.requireNonNull(relay).get(), new Item.Properties().rarity(getRarity())));
+                itemRelay = Items.Registry.register(String.format("%s_relay", name), () -> new TooltipBlockItem(Objects.requireNonNull(relay).get(), new Item.Properties().rarity(getRarity())));
             }
             case EMC_LINK -> {
                 emcLink = Blocks.Registry.register(String.format("%s_emc_link", name), () -> new BlockEMCLink(BlockEMCLink.getProperties(this), this));
-                itemEMCLink = Items.Registry.register(String.format("%s_emc_link", name), () -> new BlockItem(Objects.requireNonNull(emcLink).get(), new Item.Properties().rarity(getRarity())));
+                itemEMCLink = Items.Registry.register(String.format("%s_emc_link", name), () -> new TooltipBlockItem(Objects.requireNonNull(emcLink).get(), new Item.Properties().rarity(getRarity())));
             }
         }
     }
@@ -385,11 +387,6 @@ public enum Matter implements StringRepresentable, IMatterType {
     }
 
     @Override
-    public int getUses() {
-        return 0;
-    }
-
-    @Override
     public float getSpeed() {
         return efficiency;
     }
@@ -408,12 +405,6 @@ public enum Matter implements StringRepresentable, IMatterType {
     public int getEnchantmentValue() {
         return 0;
     }
-
-    @Override
-    public Ingredient getRepairIngredient() {
-        return Ingredient.EMPTY;
-    }
-
     private enum RegistrationType {
         MATTER,
         MATTER_BLOCK,

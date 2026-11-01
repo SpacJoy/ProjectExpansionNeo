@@ -7,9 +7,8 @@ import cool.furry.mc.neoforge.projectexpansion.registries.BlockEntityTypes;
 import cool.furry.mc.neoforge.projectexpansion.util.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -26,16 +25,16 @@ public class BlockEntityPowerFlower extends BlockEntityOwnable implements IHasMa
     }
 
     @Override
-    @SuppressWarnings("unused")
-    public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        if (tag.contains(TagNames.STORED_EMC, Tag.TAG_STRING)) emc = new BigInteger(tag.getString((TagNames.STORED_EMC)));
+    public void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        //26.3: ValueInput#getString returns an Optional, so the BigInteger is built off the fallback string
+        emc = new BigInteger(input.getStringOr(TagNames.STORED_EMC, "0"));
     }
 
     @Override
-    public void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        tag.putString(TagNames.STORED_EMC, emc.toString());
+    public void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        output.putString(TagNames.STORED_EMC, emc.toString());
     }
 
     public static void tickServer(Level level, BlockPos pos, BlockState state, BlockEntity blockEntity) {
@@ -43,7 +42,7 @@ public class BlockEntityPowerFlower extends BlockEntityOwnable implements IHasMa
     }
 
     public void tickServer(Level level, BlockPos pos, BlockState state, BlockEntityPowerFlower blockEntity) {
-        if (level.isClientSide || (level.getGameTime() % Config.server.tickDelay.get()) != Util.mod(hashCode(), Config.server.tickDelay.get())) return;
+        if (level.isClientSide() || (level.getGameTime() % Config.server.tickDelay.get()) != Util.mod(hashCode(), Config.server.tickDelay.get())) return;
         BigInteger res = getMatter().getPowerFlowerOutputForTicks(Config.server.tickDelay.get());
         if(hasSunBonus() && getSunBonus() != null) {
             res = res.multiply(BigInteger.valueOf(getSunBonus()));

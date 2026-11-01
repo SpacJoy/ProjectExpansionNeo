@@ -5,10 +5,10 @@ import cool.furry.mc.neoforge.projectexpansion.registries.BlockEntityTypes;
 import cool.furry.mc.neoforge.projectexpansion.util.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.block.state.BlockState;
 import cool.furry.mc.neoforge.projectexpansion.platform.CapabilityRegistrar;
 
@@ -49,16 +49,16 @@ public class BlockEntityRelay extends BlockEntityEMC implements IHasMatter, IRel
     }
 
     @Override
-    public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        bonusEMC = new BigInteger(tag.getString(TagNames.BONUS_EMC));
+    public void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        //26.3: ValueInput#getString returns an Optional, so the BigInteger is built off the fallback string
+        bonusEMC = new BigInteger(input.getStringOr(TagNames.BONUS_EMC, "0"));
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        tag.putString(TagNames.BONUS_EMC, bonusEMC.toString());
-
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        output.putString(TagNames.BONUS_EMC, bonusEMC.toString());
     }
 
     @Override

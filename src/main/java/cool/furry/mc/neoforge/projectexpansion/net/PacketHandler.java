@@ -16,17 +16,17 @@ public final class PacketHandler {
         server(PacketOpenTransmutationTablet.TYPE, PacketOpenTransmutationTablet.STREAM_CODEC);
         server(PacketTeleportBack.TYPE, PacketTeleportBack.STREAM_CODEC);
         server(PacketTeleportToLocation.TYPE, PacketTeleportToLocation.STREAM_CODEC);
-        PayloadTypeRegistry.playS2C().register(ClearKnowledgePacket.TYPE, ClearKnowledgePacket.STREAM_CODEC);
-        PayloadTypeRegistry.playS2C().register(PacketOpenAlchemicalBookGUI.TYPE, PacketOpenAlchemicalBookGUI.STREAM_CODEC);
-        PayloadTypeRegistry.playS2C().register(PacketSyncAlchemicalBookLocations.TYPE, PacketSyncAlchemicalBookLocations.STREAM_CODEC);
-        PayloadTypeRegistry.playS2C().register(PacketUpdateCondenserLock.TYPE, PacketUpdateCondenserLock.STREAM_CODEC);
-        PayloadTypeRegistry.playS2C().register(PacketUpdateWindowLong.TYPE, PacketUpdateWindowLong.STREAM_CODEC);
-        PayloadTypeRegistry.playS2C().register(PacketUpdateWindowInt.TYPE, PacketUpdateWindowInt.STREAM_CODEC);
-        PayloadTypeRegistry.playS2C().register(PacketUpdateWindowBigInteger.TYPE, PacketUpdateWindowBigInteger.STREAM_CODEC);
-        PayloadTypeRegistry.playS2C().register(UpdateTransmutationTargetsPacket.TYPE, UpdateTransmutationTargetsPacket.STREAM_CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(ClearKnowledgePacket.TYPE, ClearKnowledgePacket.STREAM_CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(PacketOpenAlchemicalBookGUI.TYPE, PacketOpenAlchemicalBookGUI.STREAM_CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(PacketSyncAlchemicalBookLocations.TYPE, PacketSyncAlchemicalBookLocations.STREAM_CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(PacketUpdateCondenserLock.TYPE, PacketUpdateCondenserLock.STREAM_CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(PacketUpdateWindowLong.TYPE, PacketUpdateWindowLong.STREAM_CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(PacketUpdateWindowInt.TYPE, PacketUpdateWindowInt.STREAM_CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(PacketUpdateWindowBigInteger.TYPE, PacketUpdateWindowBigInteger.STREAM_CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(UpdateTransmutationTargetsPacket.TYPE, UpdateTransmutationTargetsPacket.STREAM_CODEC);
     }
     private static <T extends IPacket> void server(CustomPacketPayload.Type<T> type, StreamCodec<? super RegistryFriendlyByteBuf, T> codec) {
-        PayloadTypeRegistry.playC2S().register(type, codec);
+        PayloadTypeRegistry.serverboundPlay().register(type, codec);
         ServerPlayNetworking.registerGlobalReceiver(type, (payload, context) -> payload.handle(context::player));
     }
     public static void registerClientReceivers() { ClientReceivers.register(); }

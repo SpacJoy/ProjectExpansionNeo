@@ -11,9 +11,10 @@ import cool.furry.mc.neoforge.projectexpansion.util.Lang;
 import moze_intel.projecte.api.capabilities.IKnowledgeProvider;
 import moze_intel.projecte.api.capabilities.PECapabilities;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.registries.Registries;
@@ -105,7 +106,7 @@ public class GUIAlchemicalBook extends Screen {
                 buttonCreate.setName(str);
             });
         }
-        String biomeName = Objects.requireNonNull(player.level().registryAccess().registryOrThrow(Registries.BIOME).getKey(player.level().getBiome(player.getOnPos()).value())).getPath();
+        String biomeName = Objects.requireNonNull(player.level().registryAccess().lookupOrThrow(Registries.BIOME).getKey(player.level().getBiome(player.getOnPos()).value())).getPath();
         createName.setValue(Arrays.stream(biomeName.split("_")).map(StringUtils::capitalize).reduce("", (a, b) -> a + " " + b).trim());
         addRenderableWidget(buttonBack = new ButtonBack(createName.getX() + createName.getWidth() + 8, buttonClose.getY(), w / 2, h));
         addRenderableWidget(createName);
@@ -215,20 +216,20 @@ public class GUIAlchemicalBook extends Screen {
         this.drawLocations();
     }
 
-    private class ButtonClose extends Button {
+    private class ButtonClose extends Button.Plain {
         public ButtonClose(int x, int y) {
             super(x, y, 40, 20, Lang.GUI.ALCHEMICAL_BOOK_CLOSE.translate(), (button) -> player.closeContainer(), Button.DEFAULT_NARRATION);
         }
     }
 
-    private class ButtonCreate extends Button {
+    private class ButtonCreate extends Button.Plain {
         String name;
         public ButtonCreate(int x, int y, int w, int h) {
             super(x, y, w, h, Lang.GUI.ALCHEMICAL_BOOK_CREATE.translate(), (button) -> {}, Button.DEFAULT_NARRATION);
         }
 
         @Override
-        public void onClick(double p_93371_, double p_93372_) {
+        public void onClick(net.minecraft.client.input.MouseButtonEvent event, boolean doubleClick) {
             if (name == null) {
                 return;
             }
@@ -240,13 +241,13 @@ public class GUIAlchemicalBook extends Screen {
         }
     }
 
-    private class ButtonDelete extends Button {
+    private class ButtonDelete extends Button.Plain {
         public ButtonDelete(int x, int y, int w, int h, String name) {
             super(x, y, w, h, Component.literal("X"), (button) -> PENetwork.sendToServer(new PacketDeleteTeleportLocation(name, player, hand)), Button.DEFAULT_NARRATION);
         }
     }
 
-    private class ButtonTeleport extends Button {
+    private class ButtonTeleport extends Button.Plain {
         final CapabilityAlchemicalBookLocations.TeleportLocation location;
         final boolean canTeleport;
         final boolean hasEnoughEMC;
@@ -262,15 +263,16 @@ public class GUIAlchemicalBook extends Screen {
         }
 
         @Override
-        protected void renderWidget(GuiGraphics graphics, int pMouseX, int pMouseY, float unknown) {
-            if(isHoveredOrFocused()) {
-                setTooltipForNextRenderPass(getTeleportationTooltip(location, canTeleport));
+        //26.3 renamed the widget render hook and split drawing into extractContents, which Button$Plain provides
+        protected void extractContents(GuiGraphicsExtractor graphics, int pMouseX, int pMouseY, float partialTicks) {
+            if (isHoveredOrFocused()) {
+                setTooltip(Tooltip.create(getTeleportationTooltip(location, canTeleport)));
             }
-            super.renderWidget(graphics, pMouseX, pMouseY, unknown);
+            super.extractContents(graphics, pMouseX, pMouseY, partialTicks);
         }
     }
 
-    private class ButtonBack extends Button {
+    private class ButtonBack extends Button.Plain {
         private @Nullable CapabilityAlchemicalBookLocations.TeleportLocation location;
         private boolean canTeleport;
         public ButtonBack(int x, int y, int w, int h) {
@@ -278,16 +280,17 @@ public class GUIAlchemicalBook extends Screen {
         }
 
         @Override
-        protected void renderWidget(GuiGraphics graphics, int pMouseX, int pMouseY, float unknown) {
-            if(isHoveredOrFocused()) {
-                if(location == null) {
-                    setTooltipForNextRenderPass(Lang.GUI.ALCHEMICAL_BOOK_NO_BACK_LOCATION.translate());
-                    super.renderWidget(graphics, pMouseX, pMouseY, unknown);
+        //26.3 renamed the widget render hook and split drawing into extractContents, which Button$Plain provides
+        protected void extractContents(GuiGraphicsExtractor graphics, int pMouseX, int pMouseY, float partialTicks) {
+            if (isHoveredOrFocused()) {
+                if (location == null) {
+                    setTooltip(Tooltip.create(Lang.GUI.ALCHEMICAL_BOOK_NO_BACK_LOCATION.translate()));
+                    super.extractContents(graphics, pMouseX, pMouseY, partialTicks);
                     return;
                 }
-                setTooltipForNextRenderPass(getTeleportationTooltip(location, canTeleport));
+                setTooltip(Tooltip.create(getTeleportationTooltip(location, canTeleport)));
             }
-            super.renderWidget(graphics, pMouseX, pMouseY, unknown);
+            super.extractContents(graphics, pMouseX, pMouseY, partialTicks);
         }
 
         public void updateLocation(@Nullable CapabilityAlchemicalBookLocations.TeleportLocation location) {
@@ -303,14 +306,14 @@ public class GUIAlchemicalBook extends Screen {
         }
     }
 
-    private class ButtonPrev extends Button {
+    private class ButtonPrev extends Button.Plain {
         public ButtonPrev(int x, int y, int w, int h, boolean active) {
             super(x, y, w, h, Lang.PREVIOUS.translate(), (button) -> GUIAlchemicalBook.this.previousPage(), Button.DEFAULT_NARRATION);
             this.active = active;
         }
     }
 
-    private class ButtonNext extends Button {
+    private class ButtonNext extends Button.Plain {
         public ButtonNext(int x, int y, int w, int h, boolean active) {
             super(x, y, w, h, Lang.NEXT.translate(), (button) -> GUIAlchemicalBook.this.nextPage(), Button.DEFAULT_NARRATION);
             this.active = active;
@@ -330,7 +333,7 @@ public class GUIAlchemicalBook extends Screen {
                 tooltips.add(Lang.GUI.ALCHEMICAL_BOOK_COST.translate(EMCFormat.getComponent(cost).withStyle(ChatFormatting.YELLOW)));
             }
         } else {
-            tooltips.add(Lang.GUI.ALCHEMICAL_BOOK_DIMENSION.translate(Component.translatable(location.dimension().location().toString())));
+            tooltips.add(Lang.GUI.ALCHEMICAL_BOOK_DIMENSION.translate(Component.translatable(location.dimension().identifier().toString())));
         }
 
         MutableComponent tooltip = Component.empty();

@@ -3,6 +3,7 @@ package cool.furry.mc.neoforge.projectexpansion.util;
 import cool.furry.mc.neoforge.projectexpansion.block.BlockAdvancedAlchemicalChest;
 import cool.furry.mc.neoforge.projectexpansion.registries.Blocks;
 import cool.furry.mc.neoforge.projectexpansion.registries.Items;
+import cool.furry.mc.neoforge.projectexpansion.item.TooltipBlockItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.DyeColor;
@@ -20,7 +21,7 @@ public class AdvancedAlchemicalChest {
 	public static void register() {
 		for(DyeColor color : DyeColor.values()) {
 			blocks.put(color, Blocks.Registry.register(String.format("%s_advanced_alchemical_chest", color.getName()), () -> new BlockAdvancedAlchemicalChest(BlockAdvancedAlchemicalChest.getProperties(), color)));
-			blockItems.put(color, Items.Registry.register(String.format("%s_advanced_alchemical_chest", color.getName()), () -> new BlockItem(getBlock(color), new Item.Properties())));
+			blockItems.put(color, Items.Registry.register(String.format("%s_advanced_alchemical_chest", color.getName()), () -> new TooltipBlockItem(getBlock(color), new Item.Properties())));
 		}
 	}
 

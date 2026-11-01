@@ -25,6 +25,7 @@ import moze_intel.projecte.network.packets.to_server.SearchUpdatePKT;
 import moze_intel.projecte.utils.ItemHelper;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.minecraft.server.level.ServerPlayer;
@@ -148,12 +149,12 @@ public class ContainerArcaneTransmutationTablet extends PEHandContainer {
     public void removed(Player player) {
         super.removed(player);
         if (!player.isAlive() || player instanceof ServerPlayer serverPlayer && serverPlayer.hasDisconnected()) {
-            player.drop(unlearn.getItem(), false);
+            player.drop(unlearn.getItem(), false, net.minecraft.util.Prediction.SERVER_ONLY);
             for (ItemStack stack : this.craftSlots.getItems()) {
-                player.drop(stack, false);
+                player.drop(stack, false, net.minecraft.util.Prediction.SERVER_ONLY);
             }
             for (int i = 0; i < this.resultSlots.getContainerSize(); i++) {
-                player.drop(this.resultSlots.getItem(i), false);
+                player.drop(this.resultSlots.getItem(i), false, net.minecraft.util.Prediction.SERVER_ONLY);
             }
         } else {
             Util.returnToInventoryOrTransmutation(playerInv, player, provider, unlearn.getItem(), false, true);
@@ -180,7 +181,8 @@ public class ContainerArcaneTransmutationTablet extends PEHandContainer {
             if (slot != null && slot.hasItem()) {
                 ItemStack itemStack1 = slot.getItem();
                 ItemStack itemStack = itemStack1.copy();
-                itemStack1.getItem().onCraftedBy(itemStack, player.level(), player);
+                //26.3 dropped the Level argument from Item#onCraftedBy
+                itemStack1.getItem().onCraftedBy(itemStack, player);
                 if (!this.moveItemStackTo(itemStack1, PLAYER, (PLAYER + PLAYER_COUNT - 1), true)) {
                     return ItemStack.EMPTY;
                 }
@@ -198,7 +200,7 @@ public class ContainerArcaneTransmutationTablet extends PEHandContainer {
 
                 slot.onTake(player, itemStack1);
                 if (slotIndex == 0) {
-                    player.drop(itemStack1, false);
+                    player.drop(itemStack1, false, net.minecraft.util.Prediction.SERVER_ONLY);
                 }
 
                 return itemStack;
@@ -222,9 +224,11 @@ public class ContainerArcaneTransmutationTablet extends PEHandContainer {
             //Double-check the item actually has Emc and something didn't just go terribly wrong
             if (itemEmc > 0) {
                 //Note: We can just set the size here as newStack is a copy stack used for modifications
+                //getMaxStackSize comes from ItemInstance and reads the MAX_STACK_SIZE component, so a stacking mod that
+                //raises it is honoured instead of being pinned to the vanilla 64
                 stack.setCount(stack.getMaxStackSize());
                 //Check how much we can fit of the stack
-                int itemsRoomFor = stack.getCount() - ItemHelper.simulateFit(player.getInventory().items, stack);
+                int itemsRoomFor = stack.getCount() - ItemHelper.simulateFit(player.getInventory().getNonEquipmentItems(), stack);
                 if (itemsRoomFor == 1) {
                     long availableEMC = transmutationInventory.getAvailableEmcAsLong();
                     if (itemEmc > availableEMC) {
@@ -292,8 +296,8 @@ public class ContainerArcaneTransmutationTablet extends PEHandContainer {
     }
 
     @Override
-    public void clickPostValidate(int slotIndex, int dragType, ClickType clickType, Player player) {
-        if (player.level().isClientSide && transmutationInventory.getHandlerForSlot(slotIndex) == transmutationInventory.outputs && tryGetSlot(slotIndex) instanceof Slot slot) {
+    public void clickPostValidate(int slotIndex, int dragType, net.minecraft.world.inventory.ContainerInput clickType, Player player) {
+        if (player.level().isClientSide() && transmutationInventory.getHandlerForSlot(slotIndex) == transmutationInventory.outputs && tryGetSlot(slotIndex) instanceof Slot slot) {
             PENetwork.sendToServer(new SearchUpdatePKT(transmutationInventory.getIndexFromSlot(slotIndex), slot.getItem()));
         }
         super.clickPostValidate(slotIndex, dragType, clickType, player);
@@ -305,10 +309,10 @@ public class ContainerArcaneTransmutationTablet extends PEHandContainer {
     }
 
     @Override
-    public void clicked(int slotId, int dragType, ClickType clickType, Player player) {
-        if (clickType == ClickType.QUICK_MOVE) skipRefill = true;
-        super.clicked(slotId, dragType, clickType, player);;
-        if (clickType == ClickType.QUICK_MOVE) skipRefill = false;
+    public void clicked(int slotId, int dragType, net.minecraft.world.inventory.ContainerInput clickType, Player player) {
+        if (clickType == net.minecraft.world.inventory.ContainerInput.QUICK_MOVE) skipRefill = true;
+        super.clicked(slotId, dragType, clickType, player);
+        if (clickType == net.minecraft.world.inventory.ContainerInput.QUICK_MOVE) skipRefill = false;
     }
 
     @Override
@@ -318,7 +322,7 @@ public class ContainerArcaneTransmutationTablet extends PEHandContainer {
     }
 
     protected static void slotChangedCraftingGrid(ContainerArcaneTransmutationTablet menu, Level level, Player player, CraftingContainer crafting, ResultContainer result) {
-        if (!level.isClientSide) {
+        if (!level.isClientSide()) {
             CraftingInput input = CraftingInput.of(3, 3, crafting.getItems());
             RegistryAccess registryAccess = level.registryAccess();
             ServerPlayer serverPlayer = (ServerPlayer) player;
@@ -326,8 +330,10 @@ public class ContainerArcaneTransmutationTablet extends PEHandContainer {
             Optional<RecipeHolder<CraftingRecipe>> optional = (Objects.requireNonNull(level.getServer())).getRecipeManager().getRecipeFor(RecipeType.CRAFTING, input, level);
             if (optional.isPresent()) {
                 RecipeHolder<CraftingRecipe> recipe = optional.get();
-                if (result.setRecipeUsed(level, serverPlayer, recipe)) {
-                    stack = recipe.value().assemble(input, registryAccess);
+                //26.3 narrowed RecipeCraftingHolder#setRecipeUsed to (ServerPlayer, RecipeHolder)
+                if (result.setRecipeUsed(serverPlayer, recipe)) {
+                    //26.3 removed the RegistryAccess argument from Recipe#assemble
+                    stack = recipe.value().assemble(input);
                 }
             }
 
@@ -490,24 +496,23 @@ public class ContainerArcaneTransmutationTablet extends PEHandContainer {
         slotsChanged(craftSlots);
         craftSlots.setChanged();
     }
-
     /** @apiNote only call on server */
     public void balanceCrafting() {
-        ArrayListMultimap<CompoundTag, ItemStack> map = ArrayListMultimap.create();
-        Multiset<CompoundTag> itemCount = HashMultiset.create();
+        //26.3 removed ItemStack#save, so the grouping key is an ItemStackTemplate with the count normalised away
+        ArrayListMultimap<ItemStackTemplate, ItemStack> map = ArrayListMultimap.create();
+        Multiset<ItemStackTemplate> itemCount = HashMultiset.create();
 
-        RegistryAccess registryAccess = player.registryAccess();
         for (int i = 0; i < craftSlots.getContainerSize(); i++) {
             ItemStack stack = craftSlots.getItem(i);
             if (!stack.isEmpty() && stack.getMaxStackSize() > 1) {
-                CompoundTag tag = (CompoundTag) stack.save(registryAccess, new CompoundTag());
-                tag.remove("count");
+                ItemStackTemplate tag = ItemStackTemplate.fromNonEmptyStack(stack).withCount(1);
                 map.put(tag, stack);
                 itemCount.add(tag, stack.getCount());
             }
         }
 
-        for (CompoundTag tag : map.keySet()) {
+
+        for (ItemStackTemplate tag : map.keySet()) {
             List<ItemStack> list = map.get(tag);
             int totalCount = itemCount.count(tag);
             int countPerStack = totalCount / list.size();

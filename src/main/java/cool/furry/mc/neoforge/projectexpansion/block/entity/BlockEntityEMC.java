@@ -10,8 +10,8 @@ import moze_intel.projecte.api.capabilities.block_entity.IEmcStorage;
 import moze_intel.projecte.utils.WorldHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -214,14 +214,15 @@ public abstract class BlockEntityEMC extends BlockEntityBase implements IEmcStor
      *******/
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        tag.putString(TagNames.STORED_EMC, getStoredEmcBigInteger().toString());
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        output.putString(TagNames.STORED_EMC, getStoredEmcBigInteger().toString());
     }
 
     @Override
-    public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        emc = new BigInteger(tag.getString(TagNames.STORED_EMC));
+    public void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        //26.3: ValueInput#getString returns an Optional, so the BigInteger is built off the fallback string
+        emc = new BigInteger(input.getStringOr(TagNames.STORED_EMC, "0"));
     }
 }

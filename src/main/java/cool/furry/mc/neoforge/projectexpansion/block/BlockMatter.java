@@ -1,7 +1,6 @@
 package cool.furry.mc.neoforge.projectexpansion.block;
 
 import com.mojang.serialization.MapCodec;
-import cool.furry.mc.neoforge.projectexpansion.registries.BlockTypes;
 import cool.furry.mc.neoforge.projectexpansion.util.IHasMatter;
 import cool.furry.mc.neoforge.projectexpansion.util.Matter;
 import cool.furry.mc.neoforge.projectexpansion.util.Util;
@@ -35,9 +34,6 @@ public class BlockMatter extends Block implements IHasMatter, IMatterBlock {
     public IMatterType getMatterType() {
         return Util.getMatterForProjectE(getMatter());
     }
-
-    @Override
-    protected MapCodec<? extends Block> codec() {
-        return BlockTypes.MATTER_BLOCK.get();
-    }
+    //26.3 removed the block_type registry and BlockBehaviour#codec; blocks are no longer serialized by codec
+    //so the whole override is gone instead of returning a MapCodec that has nowhere to be registered
 }
