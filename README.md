@@ -5,6 +5,11 @@
 **ProjectExpansionNeo** is an expansion for **ProjectEF Neo** on **Minecraft 1.21.1 / Fabric**.
 Ported from the NeoForge version of Project Expansion, it adds more options for EMC generation, storage, and automation.
 
+> **Required dependency: [ProjectEF](https://github.com/SpacJoy/ProjectEF)**
+> This mod is an addon for ProjectEF and will not load without it.
+> For this branch use [ProjectEF 1.3.4](https://github.com/SpacJoy/ProjectEF/releases/tag/1.3.4)
+> and download `ProjectEF-26.3-PE1.3.4.jar` — not the `-api.jar` or `-sources.jar` asset.
+
 > **This branch targets Minecraft 26.3.**
 > It is a port of the 1.21.1 line by [SpacJoy](https://github.com/SpacJoy/ProjectExpansionNeo),
 > forked from [wchiway/ProjectExpansionNeo](https://github.com/wchiway/ProjectExpansionNeo).
@@ -51,13 +56,16 @@ For this branch, use Minecraft 26.3, Java 25, and Fabric Loader 0.19.5 or later.
 Place the following in your instance's `mods/` directory:
 
 - Fabric API 0.165.0+26.3.
-- The full Minecraft 26.3 JAR from the [ProjectEF 1.3.4 release](https://github.com/SpacJoy/ProjectEF/releases/tag/1.3.4).
+- **[ProjectEF](https://github.com/SpacJoy/ProjectEF) 1.3.4** — the full Minecraft 26.3 JAR, from the
+  [ProjectEF 1.3.4 release page](https://github.com/SpacJoy/ProjectEF/releases/tag/1.3.4).
+  This is a hard dependency; ProjectExpansionNeo does not load without it.
 - `ProjectExpansionNeo-26.3-1.2.0.jar`.
 
 Choose the regular ProjectEF JAR, such as `ProjectEF-26.3-PE1.3.4.jar`, **not** the `-api.jar` or `-sources.jar` asset.
 ProjectEF Neo bundles Forge Config API Port and the permissions library; you do not need to install them separately.
 
-The 1.21.1 branch instead needs Minecraft 1.21.1, Java 21, and Fabric Loader 0.16.9 or later.
+The 1.21.1 branch instead needs Minecraft 1.21.1, Java 21, and Fabric Loader 0.16.9 or later, plus the
+[ProjectEF 1.21.1 JAR](https://github.com/wchiway/ProjectEF/releases).
 
 ## Optional integrations
 
@@ -74,8 +82,9 @@ See the [development guide (Chinese)](DEV.md) for building, development setup, r
 
 ## Project origins
 
-- [Upstream Project Expansion](https://github.com/DonovanDMC/ProjectExpansion)
-- [ProjectEF](https://github.com/wchiway/ProjectEF)
+- [Upstream Project Expansion](https://github.com/DonovanDMC/ProjectExpansion) — the original NeoForge mod
+- [wchiway/ProjectEF](https://github.com/wchiway/ProjectEF) — upstream ProjectEF (1.21.1 line)
+- [SpacJoy/ProjectEF](https://github.com/SpacJoy/ProjectEF) — the 26.3 ProjectEF this branch depends on
 - [This branch (Minecraft 26.3)](https://github.com/SpacJoy/ProjectExpansionNeo)
 
 This project retains upstream code, assets, and author attribution and is licensed under the [MIT License](LICENSE).

@@ -5,6 +5,11 @@
 **等价升华:Neo**（英文名 **ProjectExpansionNeo**）是面向 **Minecraft 1.21.1 / Fabric** 的 ProjectEF Neo 扩展，
 由 Project Expansion 的 NeoForge 版本迁移而来，为 EMC 的生产、存储与自动化提供更多选择。
 
+> **前置模组：[ProjectEF](https://github.com/SpacJoy/ProjectEF)**
+> 本模组是 ProjectEF 的扩展，缺少 ProjectEF 无法启动。
+> 本分支需要 [ProjectEF 1.3.4](https://github.com/SpacJoy/ProjectEF/releases/tag/1.3.4)，
+> 下载其中的 `ProjectEF-26.3-PE1.3.4.jar`，不是 `-api.jar` 或 `-sources.jar`。
+
 > **当前分支面向 Minecraft 26.3。**
 > 由 [SpacJoy](https://github.com/SpacJoy/ProjectExpansionNeo) 从 [wchiway/ProjectExpansionNeo](https://github.com/wchiway/ProjectExpansionNeo) fork 后移植。
 > 与 1.21.1 分支的差异见下方「本分支改动」。
@@ -50,13 +55,16 @@
 并在实例的 `mods/` 目录中放入：
 
 - Fabric API 0.165.0+26.3。
-- [ProjectEF 1.3.4 Release](https://github.com/SpacJoy/ProjectEF/releases/tag/1.3.4) 中的完整 Minecraft 26.3 JAR。
+- **[ProjectEF](https://github.com/SpacJoy/ProjectEF) 1.3.4**，即
+  [ProjectEF 1.3.4 Release 页](https://github.com/SpacJoy/ProjectEF/releases/tag/1.3.4) 中适用于 Minecraft 26.3 的完整 JAR。
+  这是硬性前置，缺少它 ProjectExpansionNeo 不会加载。
 - `ProjectExpansionNeo-26.3-1.2.0.jar`。
 
 选择普通的 ProjectEF JAR，例如 `ProjectEF-26.3-PE1.3.4.jar`，**不要**下载 `-api.jar` 或 `-sources.jar` 作为游戏模组安装。
 ProjectEF Neo 内嵌提供 Forge Config API Port 和权限库，无需单独安装。
 
-1.21.1 分支则需要 Minecraft 1.21.1、Java 21 和 Fabric Loader 0.16.9 或更高版本。
+1.21.1 分支则需要 Minecraft 1.21.1、Java 21 和 Fabric Loader 0.16.9 或更高版本，以及
+[ProjectEF 1.21.1 JAR](https://github.com/wchiway/ProjectEF/releases)。
 
 ## 可选集成
 
@@ -72,8 +80,10 @@ Trinkets 提供专用转换终端槽位，替代原 Curios 集成；本 Fabric �
 
 ## 项目来源
 
-- [上游 Project Expansion](https://github.com/DonovanDMC/ProjectExpansion)
-- [ProjectEF](https://github.com/wchiway/ProjectEF)
+- [上游 Project Expansion](https://github.com/DonovanDMC/ProjectExpansion) —— 原始 NeoForge 模组
+- [wchiway/ProjectEF](https://github.com/wchiway/ProjectEF) —— 上游 ProjectEF（1.21.1 分支）
+- [SpacJoy/ProjectEF](https://github.com/SpacJoy/ProjectEF) —— 本分支依赖的 26.3 版 ProjectEF
+- [本分支仓库（Minecraft 26.3）](https://github.com/SpacJoy/ProjectExpansionNeo)
 
 本项目保留上游代码、资源与作者署名，采用 [MIT 许可证](LICENSE)。
 这是非官方扩展，不由 ProjectE 原项目提供支持。
