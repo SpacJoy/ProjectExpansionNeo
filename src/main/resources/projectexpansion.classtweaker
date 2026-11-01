@@ -1,0 +1,11 @@
+classTweaker v1 official
+
+# Converted from the 1.21.1 access widener during the 26.3 port. Minecraft 26.1+ ships unobfuscated,
+# so the class tweaker uses the "official" namespace instead of the "named" one.
+
+accessible field net/minecraft/world/item/BucketItem content Lnet/minecraft/world/level/material/Fluid;
+
+# Removed in 26.3: BlockBehaviour#propertiesCodec and the block_type registry entry it fed. Block
+# properties are no longer serialized into the registry, so nothing reads this method any more.
+
+accessible field net/minecraft/server/network/ServerCommonPacketListenerImpl connection Lnet/minecraft/network/Connection;

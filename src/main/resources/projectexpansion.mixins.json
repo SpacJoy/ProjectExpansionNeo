@@ -2,7 +2,7 @@
   "required": true,
   "minVersion": "0.8",
   "package": "cool.furry.mc.neoforge.projectexpansion.mixin",
-  "compatibilityLevel": "JAVA_21",
+  "compatibilityLevel": "JAVA_25",
   "refmap": "projectexpansion.refmap.json",
   "client": [
     "DeleteWeebShitMixin",

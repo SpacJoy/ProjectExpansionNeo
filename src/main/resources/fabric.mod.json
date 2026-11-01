@@ -13,18 +13,17 @@
     "main": ["cool.furry.mc.neoforge.projectexpansion.Main"],
     "client": ["cool.furry.mc.neoforge.projectexpansion.client.Client"],
     "jei_mod_plugin": ["cool.furry.mc.neoforge.projectexpansion.integrations.jei.JeiPlugin"],
-    "emi": ["cool.furry.mc.neoforge.projectexpansion.integrations.emi.EmiPlugin"],
     "jade": ["cool.furry.mc.neoforge.projectexpansion.integrations.jade.JadePlugin"]
   },
   "mixins": ["projectexpansion.mixins.json"],
-  "accessWidener": "projectexpansion.accesswidener",
+  "accessWidener": "projectexpansion.classtweaker",
   "depends": {
-    "fabricloader": ">=0.16.9",
+    "fabricloader": ">=0.19.5",
     "fabric-api": "*",
-    "minecraft": "1.21.1",
-    "java": ">=21",
-    "projecte": ">=1.3.0",
-    "forgeconfigapiport": ">=21.1.0",
+    "minecraft": ">=26.3 <26.4",
+    "java": ">=25",
+    "projecte": ">=1.3.4",
+    "forgeconfigapiport": ">=26.3.0",
     "fabric-permissions-api-v0": "*"
   },
   "suggests": {"jei": "*", "emi": "*", "jade": "*", "wthit": "*", "trinkets": "*"}
