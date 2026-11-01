@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shapeless",
   "group": "projectexpansion:matter/lime",
   "ingredients": [
-    {
-      "item": "projectexpansion:green_collector"
-    },
-    {
-      "item": "projectexpansion:lime_matter"
-    }
+    "projectexpansion:green_collector",
+    "projectexpansion:lime_matter"
   ],
   "result": {
     "id": "projectexpansion:lime_collector"

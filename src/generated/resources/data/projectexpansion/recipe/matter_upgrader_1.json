@@ -6,24 +6,12 @@
     "LDL"
   ],
   "key": {
-    "L": {
-      "item": "projectexpansion:basic_emc_link"
-    },
-    "C": {
-      "item": "projectexpansion:basic_collector"
-    },
-    "P": {
-      "item": "projectexpansion:basic_power_flower"
-    },
-    "M": {
-      "item": "minecraft:lime_dye"
-    },
-    "R": {
-      "item": "projectexpansion:basic_relay"
-    },
-    "D": {
-      "item": "projecte:dark_matter"
-    }
+    "L": "projectexpansion:basic_emc_link",
+    "C": "projectexpansion:basic_collector",
+    "P": "projectexpansion:basic_power_flower",
+    "M": "minecraft:lime_dye",
+    "R": "projectexpansion:basic_relay",
+    "D": "projecte:dark_matter"
   },
   "result": {
     "id": "projectexpansion:matter_upgrader"

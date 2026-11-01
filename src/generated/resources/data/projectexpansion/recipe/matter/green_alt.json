@@ -7,12 +7,8 @@
     "FFF"
   ],
   "key": {
-    "F": {
-      "item": "projectexpansion:cyan_fuel"
-    },
-    "M": {
-      "item": "projectexpansion:cyan_matter"
-    }
+    "F": "projectexpansion:cyan_fuel",
+    "M": "projectexpansion:cyan_matter"
   },
   "result": {
     "id": "projectexpansion:green_matter"

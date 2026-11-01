@@ -7,9 +7,7 @@
     "CCC"
   ],
   "key": {
-    "C": {
-      "item": "projectexpansion:cyan_collector"
-    }
+    "C": "projectexpansion:cyan_collector"
   },
   "result": {
     "id": "projectexpansion:cyan_compressed_collector"

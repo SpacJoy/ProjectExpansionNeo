@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shapeless",
   "group": "projectexpansion:matter/green",
   "ingredients": [
-    {
-      "item": "projectexpansion:cyan_collector"
-    },
-    {
-      "item": "projectexpansion:green_matter"
-    }
+    "projectexpansion:cyan_collector",
+    "projectexpansion:green_matter"
   ],
   "result": {
     "id": "projectexpansion:green_collector"

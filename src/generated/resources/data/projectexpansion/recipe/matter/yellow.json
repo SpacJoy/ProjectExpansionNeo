@@ -7,12 +7,8 @@
     "FMF"
   ],
   "key": {
-    "F": {
-      "item": "projectexpansion:lime_fuel"
-    },
-    "M": {
-      "item": "projectexpansion:lime_matter"
-    }
+    "F": "projectexpansion:lime_fuel",
+    "M": "projectexpansion:lime_matter"
   },
   "result": {
     "id": "projectexpansion:yellow_matter"

@@ -2,33 +2,15 @@
   "type": "minecraft:crafting_shapeless",
   "group": "projectexpansion:fuel/green",
   "ingredients": [
-    {
-      "item": "projectexpansion:green_fuel"
-    },
-    {
-      "item": "projectexpansion:green_fuel"
-    },
-    {
-      "item": "projectexpansion:green_fuel"
-    },
-    {
-      "item": "projectexpansion:green_fuel"
-    },
-    {
-      "item": "projectexpansion:green_fuel"
-    },
-    {
-      "item": "projectexpansion:green_fuel"
-    },
-    {
-      "item": "projectexpansion:green_fuel"
-    },
-    {
-      "item": "projectexpansion:green_fuel"
-    },
-    {
-      "item": "projectexpansion:green_fuel"
-    }
+    "projectexpansion:green_fuel",
+    "projectexpansion:green_fuel",
+    "projectexpansion:green_fuel",
+    "projectexpansion:green_fuel",
+    "projectexpansion:green_fuel",
+    "projectexpansion:green_fuel",
+    "projectexpansion:green_fuel",
+    "projectexpansion:green_fuel",
+    "projectexpansion:green_fuel"
   ],
   "result": {
     "id": "projectexpansion:green_fuel_block"

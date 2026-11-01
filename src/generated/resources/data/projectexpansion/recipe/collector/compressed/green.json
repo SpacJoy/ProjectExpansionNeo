@@ -7,9 +7,7 @@
     "CCC"
   ],
   "key": {
-    "C": {
-      "item": "projectexpansion:green_collector"
-    }
+    "C": "projectexpansion:green_collector"
   },
   "result": {
     "id": "projectexpansion:green_compressed_collector"

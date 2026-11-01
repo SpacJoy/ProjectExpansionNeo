@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shapeless",
   "group": "projectexpansion:matter/fading",
   "ingredients": [
-    {
-      "item": "projectexpansion:white_relay"
-    },
-    {
-      "item": "projectexpansion:fading_matter"
-    }
+    "projectexpansion:white_relay",
+    "projectexpansion:fading_matter"
   ],
   "result": {
     "id": "projectexpansion:fading_relay"

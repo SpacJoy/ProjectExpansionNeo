@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shapeless",
   "group": "projectexpansion:matter/yellow",
   "ingredients": [
-    {
-      "item": "projectexpansion:lime_collector"
-    },
-    {
-      "item": "projectexpansion:yellow_matter"
-    }
+    "projectexpansion:lime_collector",
+    "projectexpansion:yellow_matter"
   ],
   "result": {
     "id": "projectexpansion:yellow_collector"

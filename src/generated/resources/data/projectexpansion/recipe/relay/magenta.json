@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shapeless",
   "group": "projectexpansion:matter/magenta",
   "ingredients": [
-    {
-      "item": "projectexpansion:red_relay"
-    },
-    {
-      "item": "projectexpansion:magenta_matter"
-    }
+    "projectexpansion:red_relay",
+    "projectexpansion:magenta_matter"
   ],
   "result": {
     "id": "projectexpansion:magenta_relay"

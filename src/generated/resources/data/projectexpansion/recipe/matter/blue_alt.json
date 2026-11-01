@@ -7,12 +7,8 @@
     "FFF"
   ],
   "key": {
-    "F": {
-      "item": "projectexpansion:violet_fuel"
-    },
-    "M": {
-      "item": "projectexpansion:violet_matter"
-    }
+    "F": "projectexpansion:violet_fuel",
+    "M": "projectexpansion:violet_matter"
   },
   "result": {
     "id": "projectexpansion:blue_matter"

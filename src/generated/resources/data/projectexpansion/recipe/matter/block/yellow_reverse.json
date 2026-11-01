@@ -2,9 +2,7 @@
   "type": "minecraft:crafting_shapeless",
   "group": "projectexpansion:fuel/yellow",
   "ingredients": [
-    {
-      "item": "projectexpansion:yellow_matter_block"
-    }
+    "projectexpansion:yellow_matter_block"
   ],
   "result": {
     "id": "projectexpansion:yellow_matter",

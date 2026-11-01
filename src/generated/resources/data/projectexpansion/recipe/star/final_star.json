@@ -7,12 +7,8 @@
     "SSS"
   ],
   "key": {
-    "S": {
-      "item": "projectexpansion:final_power_flower"
-    },
-    "E": {
-      "item": "minecraft:dragon_egg"
-    }
+    "S": "projectexpansion:final_power_flower",
+    "E": "minecraft:dragon_egg"
   },
   "result": {
     "id": "projectexpansion:final_star"

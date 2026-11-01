@@ -2,21 +2,11 @@
   "type": "minecraft:crafting_shapeless",
   "group": "projectexpansion:fuel/green",
   "ingredients": [
-    {
-      "item": "projecte:philosophers_stone"
-    },
-    {
-      "item": "projectexpansion:cyan_fuel"
-    },
-    {
-      "item": "projectexpansion:cyan_fuel"
-    },
-    {
-      "item": "projectexpansion:cyan_fuel"
-    },
-    {
-      "item": "projectexpansion:cyan_fuel"
-    }
+    "projecte:philosophers_stone",
+    "projectexpansion:cyan_fuel",
+    "projectexpansion:cyan_fuel",
+    "projectexpansion:cyan_fuel",
+    "projectexpansion:cyan_fuel"
   ],
   "result": {
     "id": "projectexpansion:green_fuel"

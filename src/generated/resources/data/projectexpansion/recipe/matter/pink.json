@@ -7,12 +7,8 @@
     "FMF"
   ],
   "key": {
-    "F": {
-      "item": "projectexpansion:magenta_fuel"
-    },
-    "M": {
-      "item": "projectexpansion:magenta_matter"
-    }
+    "F": "projectexpansion:magenta_fuel",
+    "M": "projectexpansion:magenta_matter"
   },
   "result": {
     "id": "projectexpansion:pink_matter"

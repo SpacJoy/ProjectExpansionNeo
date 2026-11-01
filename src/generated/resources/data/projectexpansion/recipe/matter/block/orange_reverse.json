@@ -2,9 +2,7 @@
   "type": "minecraft:crafting_shapeless",
   "group": "projectexpansion:fuel/orange",
   "ingredients": [
-    {
-      "item": "projectexpansion:orange_matter_block"
-    }
+    "projectexpansion:orange_matter_block"
   ],
   "result": {
     "id": "projectexpansion:orange_matter",

@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shapeless",
   "group": "projectexpansion:matter/white",
   "ingredients": [
-    {
-      "item": "projectexpansion:orange_relay"
-    },
-    {
-      "item": "projectexpansion:white_matter"
-    }
+    "projectexpansion:orange_relay",
+    "projectexpansion:white_matter"
   ],
   "result": {
     "id": "projectexpansion:white_relay"

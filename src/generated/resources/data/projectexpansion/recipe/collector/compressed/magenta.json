@@ -7,9 +7,7 @@
     "CCC"
   ],
   "key": {
-    "C": {
-      "item": "projectexpansion:magenta_collector"
-    }
+    "C": "projectexpansion:magenta_collector"
   },
   "result": {
     "id": "projectexpansion:magenta_compressed_collector"

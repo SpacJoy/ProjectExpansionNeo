@@ -7,9 +7,7 @@
     "CCC"
   ],
   "key": {
-    "C": {
-      "item": "projectexpansion:lime_collector"
-    }
+    "C": "projectexpansion:lime_collector"
   },
   "result": {
     "id": "projectexpansion:lime_compressed_collector"

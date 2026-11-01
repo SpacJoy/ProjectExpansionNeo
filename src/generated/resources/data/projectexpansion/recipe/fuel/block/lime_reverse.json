@@ -2,9 +2,7 @@
   "type": "minecraft:crafting_shapeless",
   "group": "projectexpansion:fuel/lime",
   "ingredients": [
-    {
-      "item": "projectexpansion:lime_fuel_block"
-    }
+    "projectexpansion:lime_fuel_block"
   ],
   "result": {
     "id": "projectexpansion:lime_fuel",

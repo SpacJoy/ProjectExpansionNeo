@@ -7,18 +7,10 @@
     "RRR"
   ],
   "key": {
-    "L": {
-      "item": "projectexpansion:white_emc_link"
-    },
-    "C": {
-      "item": "projectexpansion:white_compressed_collector"
-    },
-    "R": {
-      "item": "projectexpansion:white_relay"
-    },
-    "P": {
-      "item": "projectexpansion:orange_power_flower"
-    }
+    "L": "projectexpansion:white_emc_link",
+    "C": "projectexpansion:white_compressed_collector",
+    "R": "projectexpansion:white_relay",
+    "P": "projectexpansion:orange_power_flower"
   },
   "result": {
     "id": "projectexpansion:white_power_flower"

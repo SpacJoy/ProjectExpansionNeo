@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shapeless",
   "group": "projectexpansion:matter/blue",
   "ingredients": [
-    {
-      "item": "projectexpansion:violet_collector"
-    },
-    {
-      "item": "projectexpansion:blue_matter"
-    }
+    "projectexpansion:violet_collector",
+    "projectexpansion:blue_matter"
   ],
   "result": {
     "id": "projectexpansion:blue_collector"

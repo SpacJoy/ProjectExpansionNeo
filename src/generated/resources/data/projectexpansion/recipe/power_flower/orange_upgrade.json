@@ -7,18 +7,10 @@
     "RRR"
   ],
   "key": {
-    "L": {
-      "item": "projectexpansion:orange_emc_link"
-    },
-    "C": {
-      "item": "projectexpansion:orange_compressed_collector"
-    },
-    "R": {
-      "item": "projectexpansion:orange_relay"
-    },
-    "P": {
-      "item": "projectexpansion:yellow_power_flower"
-    }
+    "L": "projectexpansion:orange_emc_link",
+    "C": "projectexpansion:orange_compressed_collector",
+    "R": "projectexpansion:orange_relay",
+    "P": "projectexpansion:yellow_power_flower"
   },
   "result": {
     "id": "projectexpansion:orange_power_flower"

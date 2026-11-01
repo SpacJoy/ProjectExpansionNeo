@@ -2,9 +2,7 @@
   "type": "minecraft:crafting_shapeless",
   "group": "projectexpansion:fuel/purple",
   "ingredients": [
-    {
-      "item": "projectexpansion:purple_matter_block"
-    }
+    "projectexpansion:purple_matter_block"
   ],
   "result": {
     "id": "projectexpansion:purple_matter",

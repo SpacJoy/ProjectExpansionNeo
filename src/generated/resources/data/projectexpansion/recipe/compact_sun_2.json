@@ -6,15 +6,9 @@
 		"SHS"
 	],
 	"key": {
-		"Y": {
-			"item": "projectexpansion:yellow_matter"
-		},
-		"S": {
-			"item": "projectexpansion:final_star"
-		},
-		"H": {
-			"item": "projectexpansion:final_star_shard"
-		}
+		"Y": "projectexpansion:yellow_matter",
+		"S": "projectexpansion:final_star",
+		"H": "projectexpansion:final_star_shard"
 	},
 	"result": {
 		"id": "projectexpansion:compact_sun"
