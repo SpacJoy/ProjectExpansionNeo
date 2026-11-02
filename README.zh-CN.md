@@ -2,6 +2,10 @@
 
 # 等价升华:Neo（ProjectExpansionNeo）
 
+<a href="https://github.com/SpacJoy/ProjectExpansionNeo/releases"><img src="https://img.shields.io/github/v/release/SpacJoy/ProjectExpansionNeo?logo=github&label=Latest%20Release" alt="Latest Release"></a>
+<a href="https://github.com/SpacJoy/ProjectExpansionNeo/blob/26.3/LICENSE"><img src="https://img.shields.io/github/license/SpacJoy/ProjectExpansionNeo?label=License" alt="License"></a>
+<a href="https://github.com/deepseek-ai/deepseek-harness"><img src="https://img.shields.io/badge/powered_by-dsh-4D6BFE?style=flat-square&logo=deepseek&logoColor=white" alt="powered by dsh"></a>
+
 **等价升华:Neo**（英文名 **ProjectExpansionNeo**）是面向 **Minecraft 1.21.1 / Fabric** 的 ProjectEF Neo 扩展，
 由 Project Expansion 的 NeoForge 版本迁移而来，为 EMC 的生产、存储与自动化提供更多选择。
 

@@ -2,6 +2,10 @@
 
 # ProjectExpansionNeo
 
+<a href="https://github.com/SpacJoy/ProjectExpansionNeo/releases"><img src="https://img.shields.io/github/v/release/SpacJoy/ProjectExpansionNeo?logo=github&label=Latest%20Release" alt="Latest Release"></a>
+<a href="https://github.com/SpacJoy/ProjectExpansionNeo/blob/26.3/LICENSE"><img src="https://img.shields.io/github/license/SpacJoy/ProjectExpansionNeo?label=License" alt="License"></a>
+<a href="https://github.com/deepseek-ai/deepseek-harness"><img src="https://img.shields.io/badge/powered_by-dsh-4D6BFE?style=flat-square&logo=deepseek&logoColor=white" alt="powered by dsh"></a>
+
 **ProjectExpansionNeo** is an expansion for **ProjectEF Neo** on **Minecraft 1.21.1 / Fabric**.
 Ported from the NeoForge version of Project Expansion, it adds more options for EMC generation, storage, and automation.
 
