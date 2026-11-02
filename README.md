@@ -1,95 +1,93 @@
-[ProjectExpansionNeo](README.md) › **English** / [简体中文](README.zh-CN.md)
+[ProjectExpansionNeo](README.md) › **简体中文** / [English](README.en.md)
 
-# ProjectExpansionNeo
+# 等价升华:Neo（ProjectExpansionNeo）
 
 <a href="https://github.com/SpacJoy/ProjectExpansionNeo/releases"><img src="https://img.shields.io/github/v/release/SpacJoy/ProjectExpansionNeo?logo=github&label=Latest%20Release" alt="Latest Release"></a>
 <a href="https://github.com/SpacJoy/ProjectExpansionNeo/blob/26.3/LICENSE"><img src="https://img.shields.io/github/license/SpacJoy/ProjectExpansionNeo?label=License" alt="License"></a>
 <a href="https://github.com/deepseek-ai/deepseek-harness"><img src="https://img.shields.io/badge/powered_by-dsh-4D6BFE?style=flat-square&logo=deepseek&logoColor=white" alt="powered by dsh"></a>
 
-**ProjectExpansionNeo** is an expansion for **ProjectEF Neo** on **Minecraft 1.21.1 / Fabric**.
-Ported from the NeoForge version of Project Expansion, it adds more options for EMC generation, storage, and automation.
+**等价升华:Neo**（英文名 **ProjectExpansionNeo**）是面向 **Minecraft 1.21.1 / Fabric** 的 ProjectEF Neo 扩展，
+由 Project Expansion 的 NeoForge 版本迁移而来，为 EMC 的生产、存储与自动化提供更多选择。
 
-> **Required dependency: [ProjectEF](https://github.com/SpacJoy/ProjectEF)**
-> This mod is an addon for ProjectEF and will not load without it.
-> For this branch use [ProjectEF 1.3.4](https://github.com/SpacJoy/ProjectEF/releases/tag/1.3.4)
-> and download `ProjectEF-26.3-PE1.3.4.jar` — not the `-api.jar` or `-sources.jar` asset.
+> **前置模组：[ProjectEF](https://github.com/SpacJoy/ProjectEF)**
+> 本模组是 ProjectEF 的扩展，缺少 ProjectEF 无法启动。
+> 本分支需要 [ProjectEF 1.3.4](https://github.com/SpacJoy/ProjectEF/releases/tag/1.3.4)，
+> 下载其中的 `ProjectEF-26.3-PE1.3.4.jar`，不是 `-api.jar` 或 `-sources.jar`。
 
-> **This branch targets Minecraft 26.3.**
-> It is a port of the 1.21.1 line by [SpacJoy](https://github.com/SpacJoy/ProjectExpansionNeo),
-> forked from [wchiway/ProjectExpansionNeo](https://github.com/wchiway/ProjectExpansionNeo).
-> The differences from the 1.21.1 branch are listed under [Changes in this branch](#changes-in-this-branch).
+> **当前分支面向 Minecraft 26.3。**
+> 由 [SpacJoy](https://github.com/SpacJoy/ProjectExpansionNeo) 从 [wchiway/ProjectExpansionNeo](https://github.com/wchiway/ProjectExpansionNeo) fork 后移植。
+> 与 1.21.1 分支的差异见下方「本分支改动」。
 
-## Changes in this branch
+## 本分支改动
 
-### 1. Ported to Minecraft 26.3
+### 一、移植到 Minecraft 26.3
 
-The same 26.3 mechanics apply as in ProjectEF 26.3:
+底层约定与 ProjectEF 26.3 一致：
 
-| Item | 1.21.1 | 26.3 |
+| 项目 | 1.21.1 | 26.3 |
 | --- | --- | --- |
-| Item model entry | `assets/<ns>/models/item/*.json` | `assets/<ns>/items/*.json` |
-| Slot icon | any atlas | must live under `textures/gui/sprites/` |
-| GUI layering | draw-call order | `GuiRenderState` bounding-box tree; use `nextStratum()` to force a layer on top |
-| Block item translation key | `block.<ns>.<path>` | `item.<ns>.<path>`; call `useBlockDescriptionPrefix()` to switch back |
-| Access widener | `*.accesswidener` | `*.classtweaker` |
-| Build | Loom 1.10.x / JDK 21 | Loom 1.18.2 / JDK 25 |
+| 物品模型入口 | `assets/<ns>/models/item/*.json` | `assets/<ns>/items/*.json` |
+| 饰品槽图标 | 任意图集 | 必须在 `textures/gui/sprites/` 下 |
+| GUI 分层 | 按绘制顺序 | `GuiRenderState` 包围盒树，需要置顶时调 `nextStratum()` |
+| 方块物品翻译键 | `block.<ns>.<path>` | `item.<ns>.<path>`，需调 `useBlockDescriptionPrefix()` 切回 |
+| access widener | `*.accesswidener` | `*.classtweaker` |
+| 构建 | Loom 1.10.x / JDK 21 | Loom 1.18.2 / JDK 25 |
 
-Recipe JSON now writes item references as plain strings instead of `{"item": "..."}` objects.
+配方 JSON 里引用物品改成字符串，不再是 `{"item": "..."}` 对象。
 
-### 2. Behaviour fixes unique to this branch
+### 二、本分支独有的行为修复
 
-- **Arcane Transmutation Tablet count labels** are drawn in a separate stratum after the item icons, so the icons no longer cover them.
-- **EMC unit names** follow the game language (Chinese uses 兆 / 京 / 垓 and so on instead of Quintillion-style English suffixes). The top-left HUD uses the same formatter.
-- **EMC per second readout** was showing twice the real gain; the two 20-tick samples are now averaged instead of summed.
-- **Stack limits** go through `getMaxStackSize()` instead of reading `MAX_STACK_SIZE` directly, so stacking mods such as Stackable are respected.
-- **Curios data removed.** The upstream 1.21.1 tree still carried `data/curios/` files even though the mod targets Trinkets; those dead files are gone and the necklace/ring tags list item IDs directly.
+- **奥术转换桌的数量文字**改在物品图标之后单独分层绘制，不再被图标盖住。
+- **EMC 单位**按游戏语言显示（中文为 兆 / 京 / 垓 等中文数量级，不是 Quintillion 这类英文后缀），左上角 HUD 同步生效。
+- **EMC 每秒速率**之前显示成实际值的两倍，现已改为两次采样取平均。
+- **堆叠上限**改用 `getMaxStackSize()`，不再直接读 `MAX_STACK_SIZE`，兼容 Stackable 这类堆叠模组。
+- **删除失效的 Curios 数据**：上游 1.21.1 树里仍留着 `data/curios/` 文件，但模组实际用 Trinkets，这些死文件已清除，项链和戒指标签改为直接列物品 ID。
 
-### 3. Not ported
+### 三、未移植
 
-- **EMI** has no 26.3 build. The integration source stays in the tree but is excluded from compilation.
+- **EMI** 没有 26.3 版本，集成源码保留在树里但排除在编译之外。
 
-## Features
+## 主要内容
 
-- **EMC generation:** Higher-tier energy collectors, relays, and power flowers.
-- **EMC storage and automation:** Large EMC stars, EMC links, transmutation interfaces, and the Energy Condenser MK3.
-- **Storage and utilities:** Advanced alchemical chests, alchemical books, the Arcane Transmutation Tablet, and infinite fuel.
+- **EMC 生产**：更多等级的 EMC 收集器、能量中继器和能量之花。
+- **EMC 存储与自动化**：巨型之星、EMC 链接、转换接口和能量凝聚器 MK3。
+- **收纳与实用工具**：高级炼金箱、炼金书、奥术转换终端和无限燃料。
 
-## Installation
+## 安装
 
-For this branch, use Minecraft 26.3, Java 25, and Fabric Loader 0.19.5 or later.
-Place the following in your instance's `mods/` directory:
+本分支使用 Minecraft 26.3、Java 25 和 Fabric Loader 0.19.5 或更高版本，
+并在实例的 `mods/` 目录中放入：
 
-- Fabric API 0.165.0+26.3.
-- **[ProjectEF](https://github.com/SpacJoy/ProjectEF) 1.3.4** — the full Minecraft 26.3 JAR, from the
-  [ProjectEF 1.3.4 release page](https://github.com/SpacJoy/ProjectEF/releases/tag/1.3.4).
-  This is a hard dependency; ProjectExpansionNeo does not load without it.
-- `ProjectExpansionNeo-26.3-1.2.0.jar`.
+- Fabric API 0.165.0+26.3。
+- **[ProjectEF](https://github.com/SpacJoy/ProjectEF) 1.3.4**，即
+  [ProjectEF 1.3.4 Release 页](https://github.com/SpacJoy/ProjectEF/releases/tag/1.3.4) 中适用于 Minecraft 26.3 的完整 JAR。
+  这是硬性前置，缺少它 ProjectExpansionNeo 不会加载。
+- `ProjectExpansionNeo-26.3-1.2.0.jar`。
 
-Choose the regular ProjectEF JAR, such as `ProjectEF-26.3-PE1.3.4.jar`, **not** the `-api.jar` or `-sources.jar` asset.
-ProjectEF Neo bundles Forge Config API Port and the permissions library; you do not need to install them separately.
+选择普通的 ProjectEF JAR，例如 `ProjectEF-26.3-PE1.3.4.jar`，**不要**下载 `-api.jar` 或 `-sources.jar` 作为游戏模组安装。
+ProjectEF Neo 内嵌提供 Forge Config API Port 和权限库，无需单独安装。
 
-The 1.21.1 branch instead needs Minecraft 1.21.1, Java 21, and Fabric Loader 0.16.9 or later, plus the
-[ProjectEF 1.21.1 JAR](https://github.com/wchiway/ProjectEF/releases).
+1.21.1 分支则需要 Minecraft 1.21.1、Java 21 和 Fabric Loader 0.16.9 或更高版本，以及
+[ProjectEF 1.21.1 JAR](https://github.com/wchiway/ProjectEF/releases)。
 
-## Optional integrations
+## 可选集成
 
-Supported integrations include JEI, EMI, Jade, WTHIT, and Trinkets.
-Trinkets provides a dedicated transmutation tablet slot in place of the former Curios integration.
-TOP integration is not included in this Fabric version.
+支持 JEI、EMI、Jade、WTHIT 和 Trinkets。
+Trinkets 提供专用转换终端槽位，替代原 Curios 集成；本 Fabric 版本不包含 TOP 集成。
 
-## Configuration and compatibility
+## 配置与兼容性
 
-Server and client configuration files continue to use TOML. The mod ID remains `projectexpansion`.
-Migrating existing NeoForge worlds across loaders has not been verified.
+服务器和客户端配置沿用 TOML 格式。模组 ID 保持为 `projectexpansion`。
+旧版 NeoForge 存档跨加载器迁移尚未验证。
 
-See the [development guide (Chinese)](DEV.md) for building, development setup, resource generation, and testing.
+构建、开发环境、资源生成和测试说明见 [开发指南](DEV.md)。
 
-## Project origins
+## 项目来源
 
-- [Upstream Project Expansion](https://github.com/DonovanDMC/ProjectExpansion) — the original NeoForge mod
-- [wchiway/ProjectEF](https://github.com/wchiway/ProjectEF) — upstream ProjectEF (1.21.1 line)
-- [SpacJoy/ProjectEF](https://github.com/SpacJoy/ProjectEF) — the 26.3 ProjectEF this branch depends on
-- [This branch (Minecraft 26.3)](https://github.com/SpacJoy/ProjectExpansionNeo)
+- [上游 Project Expansion](https://github.com/DonovanDMC/ProjectExpansion) —— 原始 NeoForge 模组
+- [wchiway/ProjectEF](https://github.com/wchiway/ProjectEF) —— 上游 ProjectEF（1.21.1 分支）
+- [SpacJoy/ProjectEF](https://github.com/SpacJoy/ProjectEF) —— 本分支依赖的 26.3 版 ProjectEF
+- [本分支仓库（Minecraft 26.3）](https://github.com/SpacJoy/ProjectExpansionNeo)
 
-This project retains upstream code, assets, and author attribution and is licensed under the [MIT License](LICENSE).
-It is an unofficial expansion and is not supported by the original ProjectE project.
+本项目保留上游代码、资源与作者署名，采用 [MIT 许可证](LICENSE)。
+这是非官方扩展，不由 ProjectE 原项目提供支持。

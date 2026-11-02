@@ -1,6 +1,6 @@
 # 等价升华:Neo 开发指南
 
-本文件介绍构建、开发与验证流程。模组功能和安装说明见 [English README](README.md) / [中文 README](README.zh-CN.md)。
+本文件介绍构建、开发与验证流程。模组功能和安装说明见 [中文 README](README.md) / [English README](README.en.md)。
 
 ## 开发环境
 
