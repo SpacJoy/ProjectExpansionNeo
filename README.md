@@ -9,10 +9,10 @@
 **等价交换Neo扩展**（英文名 **ProjectExpansionNeo**）是面向 **Minecraft 26.3 / Fabric** 的 ProjectEF Neo 扩展，
 由 Project Expansion 的 NeoForge 版本迁移而来，为 EMC 的生产、存储与自动化提供更多选择。
 
-> **前置模组：[ProjectEF](https://github.com/SpacJoy/ProjectEF)**
-> 本模组是 ProjectEF 的扩展，缺少 ProjectEF 无法启动。
-> 本分支需要 [ProjectEF 1.3.4](https://github.com/SpacJoy/ProjectEF/releases/tag/1.3.4)，
-> 下载其中的 `ProjectEF-26.3-PE1.3.4.jar`，不是 `-api.jar` 或 `-sources.jar`。
+> **前置模组：[ProjectEF Neo](https://github.com/SpacJoy/ProjectEF)**
+> 本模组是 ProjectEF Neo的扩展，缺少 ProjectEF Neo无法启动。
+> 本分支需要 [ProjectEF Neo](https://github.com/SpacJoy/ProjectEF/releases)，
+> 下载其中的 `ProjectEF-26.3-PEx.x.x.jar`，不是 `-api.jar` 或 `-sources.jar`。
 
 > **当前分支面向 Minecraft 26.3。**
 > 由 [SpacJoy](https://github.com/SpacJoy/ProjectExpansionNeo) 从 [wchiway/ProjectExpansionNeo](https://github.com/wchiway/ProjectExpansionNeo) fork 后移植。
