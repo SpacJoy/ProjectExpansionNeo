@@ -231,7 +231,7 @@ test('reports token exhaustion without leaking reasoning text', async () => {
 
 test('accepts untranslatable Chinese proper nouns inside English prose', async () => {
     for (const content of [
-        '### Other\n\n- Rename the Chinese display name to 等价交换 Neo 扩展 (df06686).\n',
+        '### Other\n\n- Rename the Chinese display name to 等价交换Neo扩展 (df06686).\n',
         '### Fixes\n\n- Localize the mod display name (等价扩展:Neo) for Simplified Chinese players.\n',
     ]) {
         assert.equal(await summarize('commits', fallback, { ...options, fetchImpl: async () => response(content) }), content);
